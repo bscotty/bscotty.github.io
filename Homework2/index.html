@@ -16,7 +16,6 @@
 </script>
 
 <script id='fss_script' type='x-shader/x-fragment'>
-
 ---------------------------------------------------------------------
 varying vec3 vPos;                               // Position in image
 uniform float uTime;                             // Time
@@ -87,10 +86,9 @@ void main() {
 
    gl_FragColor = vec4(sqrt(c), 1.);             // Final pixel color
 }
+---------------------------------------------------------------------Adding a second light source.
 ---------------------------------------------------------------------
-Adding a second light source.
----------------------------------------------------------------------
-
+                            x
 ---------------------------------------------------------------------
 varying vec3 vPos;                               // Position in image
 uniform float uTime;                             // Time
@@ -118,15 +116,92 @@ void main() {
       vec3 N = normalize(P - S.xyz);             // Surface normal
       float brightness1 = max(0., dot(N, LDir1));
       float brightness2 = max(0., dot(N, LDir2));
-      brightness2 = mix(.1, brightness2, .5);
       brightness1 = mix(.1, brightness1, .5);      // Diffuse surface
+      brightness2 = mix(.1, brightness2, .5);
       c = vec3(.1,1. * brightness2,1. * brightness1);
    }
 
    gl_FragColor = vec4(sqrt(c), 1.);             // Final pixel color
 }
+---------------------------------------------------------------------Coloring the two different light sources.
 ---------------------------------------------------------------------
-Coloring the two different light sources.
+                x
+---------------------------------------------------------------------
+varying vec3 vPos;                               // Position in image
+uniform float uTime;                             // Time
+vec3 LDir1 = normalize(vec3(1.,-sin(uTime),.5)); // Light direction
+vec3 LDir2 = normalize(vec3(sin(uTime),-1.,.5)); // Light direction
+
+vec2 raytraceSphere(vec3 V, vec3 W, vec4 S) {
+   V -= S.xyz;
+   float B = 2. * dot(V, W);
+   float C = dot(V, V) - S.w * S.w;
+   float discrim = B*B - 4.*C;
+   return discrim < 0. ? vec2(-1., -1)
+                       : vec2(-B - discrim, -B + discrim) / 2.;
+}
+
+void main() {
+   vec3 c = vec3(.01,.01,.06);                   // Dark background
+   c = mix(vec3(.03,.02,.04), c, .5 + .5 * vPos.y); // Gradient
+   vec3 V = vec3(0.,0.,0.);                      // Ray origin
+   vec3 W = normalize(vec3(vPos.xy, -3.));       // Ray direction
+   vec4 S = vec4(cos(uTime),sin(uTime),-5.,.5);  // Animate sphere
+   vec2 t = raytraceSphere(V, W, S);             // Ray trace sphere
+
+   if (t.x > 0.) {
+      vec3 P = V + t.x * W;                      // Point on sphere
+      vec3 N = normalize(P - S.xyz);             // Surface normal
+      float brightness1 = max(0., dot(N, LDir1));
+      float brightness2 = max(0., dot(N, LDir2));
+      brightness1 = mix(.1, brightness1, .5);      // Diffuse surface
+      brightness2 = mix(.1, brightness2, .5);
+      c = vec3(.1,1. * brightness2,1. * brightness1);
+   }
+
+   gl_FragColor = vec4(sqrt(c), 1.);             // Final pixel color
+}
+---------------------------------------------------------------------Adding cool background gradient!
+---------------------------------------------------------------------
+                   x x x
+---------------------------------------------------------------------
+varying vec3 vPos;                               // Position in image
+uniform float uTime;                             // Time
+vec3 LDir1 = normalize(vec3(1.,-sin(uTime),.5)); // Light direction
+vec3 LDir2 = normalize(vec3(sin(uTime),-1.,.5)); // Light direction
+
+vec2 raytraceSphere(vec3 V, vec3 W, vec4 S) {
+   V -= S.xyz;
+   float B = 2. * dot(V, W);
+   float C = dot(V, V) - S.w * S.w;
+   float discrim = B*B - 4.*C;
+   return discrim < 0. ? vec2(-1., -1)
+                       : vec2(-B - discrim, -B + discrim) / 2.;
+}
+
+void main() {
+   vec3 c = vec3(.01,.01,.06);                   // Dark background
+   c = mix(vec3(.03,.02,.04), c, .5 + .5 * vPos.y); // Gradient
+   vec3 V = vec3(0.,0.,0.);                      // Ray origin
+   vec3 W = normalize(vec3(vPos.xy, -3.));       // Ray direction
+   vec4 S = vec4(cos(uTime),sin(uTime),-5.,.5);  // Animate sphere
+   vec4 S2 = vec4(-.2 * sin(uTime),-.2 * cos(uTime),-5.,.5);
+   vec2 t = raytraceSphere(V, W, S);             // Ray trace sphere
+   vec2 t2 = raytraceSphere(V, W, S2);
+
+   if (t.x > 0. || t2.x > 0.) {
+      vec3 P = V + t.x * W;                      // Point on sphere
+      vec3 N = normalize(P - S.xyz);             // Surface normal
+      float brightness1 = max(0., dot(N, LDir1));
+      float brightness2 = max(0., dot(N, LDir2));
+      brightness1 = mix(.1, brightness1, .5);      // Diffuse surface
+      brightness2 = mix(.1, brightness2, .5);
+      c = vec3(.1,1. * brightness2,1. * brightness1);
+   }
+
+   gl_FragColor = vec4(sqrt(c), 1.);             // Final pixel color
+}
+---------------------------------------------------------------------Trying to figure out additional sphere collision...
 </script>
    
 <script>

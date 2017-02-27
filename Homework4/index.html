@@ -226,7 +226,7 @@ void main() {
 ---------------------------------------------------------------------
 Adding turbulence to the background function gives us a cool texture.
 ---------------------------------------------------------------------
-                                                          xxx
+                                                           xxx
 ---------------------------------------------------------------------
 varying vec3 vPos;                         // Position in image
 uniform float uTime;                       // Time
@@ -336,7 +336,7 @@ a weird, milky pattern. As a result of adding the noise to the phong
 algorithm, it manifests essentially a reaction to the lights. I adapted
 it from the soap function from the bubble breakdown.
 ---------------------------------------------------------------------
-                                          x                x
+                                           x                x
 ---------------------------------------------------------------------
 varying vec3 vPos;                         // Position in image
 uniform float uTime;                       // Time
@@ -440,11 +440,13 @@ void main() {
    gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
 }
 ---------------------------------------------------------------------
-Subtracting a very small amount of noise based on vPos before the
+Reverted change from the previous step.
+
+"Subtracting" a very small amount of noise based on vPos before the
 phong shading is done creates a smoky look. Because it's based on
-the vPos, it looks a lot like smoke rolling around inside the
-spheres, but not quite. It might be because the spheres themselves
-don't look like they're made out of glass.
+vPos, it looks a lot like smoke rolling around inside the spheres, but
+not quite. It might be because the spheres themselves don't look
+like they're made out of glass.
 ---------------------------------------------------------------------
                                           x                x
 ---------------------------------------------------------------------
@@ -593,8 +595,7 @@ vec2 raytraceSphere(vec3 V, vec3 W, Sphere S) {
 
 vec3 backgroundColor(vec3 dir) {
    float t = .5 - .5 * dir.y;
-   return mix(vec3(.2,.01,.01), vec3(.01,.01,.1), 1. - t * t) *
-               (turbulence(vec3(t, t, t)) * 5.);
+   return mix(vec3(.2,.01,.01), vec3(.01,.01,.1), 1. - t * t);
 }
 
 vec3 phong(vec3 P, vec3 N, vec3 E, Material C) {
@@ -657,14 +658,16 @@ void main() {
    gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
 }
 ---------------------------------------------------------------------
+Warning: Framerates may suffer.
+Removed cool background to save the frames.
+Reverted change from the previous two steps.
+
 Adding noise to the center of the sphere can affect its position, as
 the centers of our spheres are constantly in motion. It also causes
 the sphere to interact with the lights in a very bizarre way. I'm
 not really sure what's going on, frankly. It might be that the lights
 are "inside" the spheres? Or that the spheres are reflecting on them-
 selves? I don't know.
-
-Warning: Framerates may suffer.
 ---------------------------------------------------------------------
                          xx
 ---------------------------------------------------------------------
@@ -707,8 +710,7 @@ vec2 raytraceSphere(vec3 V, vec3 W, Sphere S) {
 
 vec3 backgroundColor(vec3 dir) {
    float t = .5 - .5 * dir.y;
-   return mix(vec3(.2,.01,.01), vec3(.01,.01,.1), 1. - t * t) *
-               (turbulence(vec3(t, t, t)) * 5.);
+   return mix(vec3(.2,.01,.01), vec3(.01,.01,.1), 1. - t * t);
 }
 
 vec3 phong(vec3 P, vec3 N, vec3 E, Material C) {
@@ -771,9 +773,11 @@ void main() {
    gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
 }
 ---------------------------------------------------------------------
-We can also use the noise of a sphere's coordinates to affect its size!
-
 Warning: Framerates may suffer.
+Removed cool background to save the frames.
+Reverted change from the previous step.
+
+We can also use the noise of a sphere's coordinates to affect its size!
 ---------------------------------------------------------------------
 
 ---------------------------------------------------------------------

@@ -120,6 +120,440 @@ void main() {
 }
 ---------------------------------------------------------------------
 Professor Perlin's Code, a jumping off point.
+---------------------------------------------------------------------
+                                                          xxx
+---------------------------------------------------------------------
+varying vec3 vPos;                         // Position in image
+uniform float uTime;                       // Time
+
+struct Light {                             // Light source data.
+   vec3 direction;
+   vec3 color;
+};
+
+struct Material {                          // Surface material data.
+   vec3  ambient;
+   vec3  diffuse;
+   vec3  specular;
+   float power;
+};
+
+struct Sphere {                            // Sphere object data.
+   vec3     center;
+   float    radius;
+   Material material;
+};
+
+uniform Light uLights[NLIGHTS];            // All the lights.
+uniform Sphere uSpheres[NSPHERES];         // All the spheres.
+
+vec2 raytraceSphere(vec3 V, vec3 W, Sphere S) {
+   V -= S.center;
+   float B = 2. * dot(V, W);
+   float C = dot(V, V) - S.radius * S.radius;
+   float discrim = B*B - 4.*C;
+   vec2 t = vec2(1000., 1000.);
+   if (discrim > 0.)
+      t = vec2(-B - discrim, -B + discrim) / 2.;
+   return t.x > 0. ? t : vec2(1000., 1000.);
+}
+
+vec3 backgroundColor(vec3 dir) {
+   float t = .5 - .5 * dir.y;
+   return mix(vec3(.2,.01,.01), vec3(.01,.01,.1), 1. - t * t);
+}
+
+vec3 phong(vec3 P, vec3 N, vec3 E, Material C) {
+   vec3 c = C.ambient * backgroundColor(N);       // Ambient color
+   for (int i = 0 ; i < NLIGHTS ; i++) { // Loop through lights
+      vec3 L = normalize(uLights[i].direction);
+      vec2 t;
+      for (int j = 0 ; j < NSPHERES ; j++) {// Loop through spheres.
+         t = raytraceSphere(P+.001*L, L, uSpheres[j]);
+         if (t.x < 1000.)// If any casts a shadow then stop looping.
+            break;
+      }
+      if (t.x == 1000.) {                      // If not in shadow:
+         float d = max(0., dot(N, L));                // Diffuse
+         vec3  R = reflect(-L, N);
+         float s = pow(max(0., dot(E, R)), C.power);  // Specular
+         c += uLights[i].color
+              * (d * C.diffuse + s * C.specular * .1*C.power);
+      }
+   }
+   return c + vec3(.16, .5, .16) *
+          sin(noise(15. * c + vec3(10.,10.,10.)) *
+          turbulence(c + vec3(0., 0., .11)));
+}
+
+Material C;
+vec3 V, W, P, E, N;
+
+bool raytrace() {
+   float distance = 1000.;
+   for (int i = 0 ; i < NSPHERES ; i++) {
+      vec2 t = raytraceSphere(V, W, uSpheres[i]);
+      if (t.x < distance) {                    // Properties for Obj
+         C = uSpheres[i].material;             // Material
+         P = V + t.x * W;                      // Point on sphere
+         E = -normalize(P);                    // Direction to eye
+         N = normalize(P - uSpheres[i].center);// Surface normal
+         distance = t.x;
+      }
+   }
+   return distance < 1000.;
+}
+
+void main() {
+   vec3 c = vec3(0.,0.,0.);
+
+   V = vec3(0.,0.,0.);                         // Ray origin
+   W = normalize(vec3(vPos.xy, -3.));          // Ray direction
+   if (! raytrace())
+      c = backgroundColor(vPos);
+   else
+      for (int bounce = 0 ; bounce < 5 ; bounce++) {
+         float attenuation = pow(0.6, float(bounce + 1));
+         c += attenuation * phong(P, N, E, C);
+         c += .5 * attenuation * backgroundColor(W);
+         V = P + .001 * W;
+         W = reflect(W, N);
+         if (! raytrace())
+            break;
+      }
+
+   gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
+}
+---------------------------------------------------------------------
+Adding noise to the phong algorithm's result. Spheres appear to have
+a weird, milky pattern. As a result of adding the noise to the phong
+algorithm, it manifests essentially a reaction to the lights. I adapted
+it from the soap function from the bubble breakdown.
+---------------------------------------------------------------------
+                                          x                x
+---------------------------------------------------------------------
+varying vec3 vPos;                         // Position in image
+uniform float uTime;                       // Time
+
+struct Light {                             // Light source data.
+   vec3 direction;
+   vec3 color;
+};
+
+struct Material {                          // Surface material data.
+   vec3  ambient;
+   vec3  diffuse;
+   vec3  specular;
+   float power;
+};
+
+struct Sphere {                            // Sphere object data.
+   vec3     center;
+   float    radius;
+   Material material;
+};
+
+uniform Light uLights[NLIGHTS];            // All the lights.
+uniform Sphere uSpheres[NSPHERES];         // All the spheres.
+
+vec2 raytraceSphere(vec3 V, vec3 W, Sphere S) {
+   V -= S.center;
+   float B = 2. * dot(V, W);
+   float C = dot(V, V) - S.radius * S.radius;
+   float discrim = B*B - 4.*C;
+   vec2 t = vec2(1000., 1000.);
+   if (discrim > 0.)
+      t = vec2(-B - discrim, -B + discrim) / 2.;
+   return t.x > 0. ? t : vec2(1000., 1000.);
+}
+
+vec3 backgroundColor(vec3 dir) {
+   float t = .5 - .5 * dir.y;
+   return mix(vec3(.2,.01,.01), vec3(.01,.01,.1), 1. - t * t);
+}
+
+vec3 phong(vec3 P, vec3 N, vec3 E, Material C) {
+   vec3 c = C.ambient * backgroundColor(N);       // Ambient color
+   c -= .05 * noise(4.2 * P);                     // Cloudiness
+   for (int i = 0 ; i < NLIGHTS ; i++) { // Loop through lights
+      vec3 L = normalize(uLights[i].direction);
+      vec2 t;
+      for (int j = 0 ; j < NSPHERES ; j++) {// Loop through spheres.
+         t = raytraceSphere(P+.001*L, L, uSpheres[j]);
+         if (t.x < 1000.)// If any casts a shadow then stop looping.
+            break;
+      }
+      if (t.x == 1000.) {                      // If not in shadow:
+         float d = max(0., dot(N, L));                // Diffuse
+         vec3  R = reflect(-L, N);
+         float s = pow(max(0., dot(E, R)), C.power);  // Specular
+         c += uLights[i].color
+              * (d * C.diffuse + s * C.specular * .1*C.power);
+      }
+   }
+   return c;
+}
+
+Material C;
+vec3 V, W, P, E, N;
+
+bool raytrace() {
+   float distance = 1000.;
+   for (int i = 0 ; i < NSPHERES ; i++) {
+      vec2 t = raytraceSphere(V, W, uSpheres[i]);
+      if (t.x < distance) {                    // Properties for Obj
+         C = uSpheres[i].material;             // Material
+         P = V + t.x * W;                      // Point on sphere
+         E = -normalize(P);                    // Direction to eye
+         N = normalize(P - uSpheres[i].center);// Surface normal
+         distance = t.x;
+      }
+   }
+   return distance < 1000.;
+}
+
+void main() {
+   vec3 c = vec3(0.,0.,0.);
+
+   V = vec3(0.,0.,0.);                         // Ray origin
+   W = normalize(vec3(vPos.xy, -3.));          // Ray direction
+   if (! raytrace())
+      c = backgroundColor(vPos);
+   else
+      for (int bounce = 0 ; bounce < 5 ; bounce++) {
+         float attenuation = pow(0.6, float(bounce + 1));
+         c += attenuation * phong(P, N, E, C);
+         c += .5 * attenuation * backgroundColor(W);
+         V = P + .001 * W;
+         W = reflect(W, N);
+         if (! raytrace())
+            break;
+      }
+
+   gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
+}
+---------------------------------------------------------------------
+Subtracting a very small amount of noise based on vPos before the
+phong shading is done creates a smoky look. Because it's based on
+the vPos, it looks a lot like smoke rolling around inside the
+spheres, but not quite. It might be because the spheres themselves
+don't look like they're made out of glass.
+---------------------------------------------------------------------
+                         xx
+---------------------------------------------------------------------
+varying vec3 vPos;                         // Position in image
+uniform float uTime;                       // Time
+
+struct Light {                             // Light source data.
+   vec3 direction;
+   vec3 color;
+};
+
+struct Material {                          // Surface material data.
+   vec3  ambient;
+   vec3  diffuse;
+   vec3  specular;
+   float power;
+};
+
+struct Sphere {                            // Sphere object data.
+   vec3     center;
+   float    radius;
+   Material material;
+};
+
+uniform Light uLights[NLIGHTS];            // All the lights.
+uniform Sphere uSpheres[NSPHERES];         // All the spheres.
+
+vec2 raytraceSphere(vec3 V, vec3 W, Sphere S) {
+   S.center += noise(S.center);
+   V -= S.center;
+   float B = 2. * dot(V, W);
+   float C = dot(V, V) - S.radius * S.radius;
+   float discrim = B*B - 4.*C;
+   vec2 t = vec2(1000., 1000.);
+   if (discrim > 0.)
+      t = vec2(-B - discrim, -B + discrim) / 2.;
+   return t.x > 0. ? t : vec2(1000., 1000.);
+}
+
+vec3 backgroundColor(vec3 dir) {
+   float t = .5 - .5 * dir.y;
+   return mix(vec3(.2,.01,.01), vec3(.01,.01,.1), 1. - t * t);
+}
+
+vec3 phong(vec3 P, vec3 N, vec3 E, Material C) {
+   vec3 c = C.ambient * backgroundColor(N);       // Ambient color
+   for (int i = 0 ; i < NLIGHTS ; i++) { // Loop through lights
+      vec3 L = normalize(uLights[i].direction);
+      vec2 t;
+      for (int j = 0 ; j < NSPHERES ; j++) {// Loop through spheres.
+         t = raytraceSphere(P+.001*L, L, uSpheres[j]);
+         if (t.x < 1000.)// If any casts a shadow then stop looping.
+            break;
+      }
+      if (t.x == 1000.) {                      // If not in shadow:
+         float d = max(0., dot(N, L));                // Diffuse
+         vec3  R = reflect(-L, N);
+         float s = pow(max(0., dot(E, R)), C.power);  // Specular
+         c += uLights[i].color
+              * (d * C.diffuse + s * C.specular * .1*C.power);
+      }
+   }
+   return c;
+}
+
+Material C;
+vec3 V, W, P, E, N;
+
+bool raytrace() {
+   float distance = 1000.;
+   for (int i = 0 ; i < NSPHERES ; i++) {
+      vec2 t = raytraceSphere(V, W, uSpheres[i]);
+      if (t.x < distance) {                    // Properties for Obj
+         C = uSpheres[i].material;             // Material
+         P = V + t.x * W;                      // Point on sphere
+         E = -normalize(P);                    // Direction to eye
+         N = normalize(P - uSpheres[i].center);// Surface normal
+         distance = t.x;
+      }
+   }
+   return distance < 1000.;
+}
+
+void main() {
+   vec3 c = vec3(0.,0.,0.);
+
+   V = vec3(0.,0.,0.);                         // Ray origin
+   W = normalize(vec3(vPos.xy, -3.));          // Ray direction
+   if (! raytrace())
+      c = backgroundColor(vPos);
+   else
+      for (int bounce = 0 ; bounce < 5 ; bounce++) {
+         float attenuation = pow(0.6, float(bounce + 1));
+         c += attenuation * phong(P, N, E, C);
+         c += .5 * attenuation * backgroundColor(W);
+         V = P + .001 * W;
+         W = reflect(W, N);
+         if (! raytrace())
+            break;
+      }
+
+   gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
+}
+---------------------------------------------------------------------
+Adding noise to the center of the sphere can affect its position, as
+the centers of our spheres are constantly in motion. It also causes
+the sphere to interact with the lights in a very bizarre way. I'm
+not really sure what's going on, frankly. It might be that the lights
+are "inside" the spheres? Or that the spheres are reflecting on them-
+selves? I don't know.
+---------------------------------------------------------------------
+                         xx
+---------------------------------------------------------------------
+varying vec3 vPos;                         // Position in image
+uniform float uTime;                       // Time
+
+struct Light {                             // Light source data.
+   vec3 direction;
+   vec3 color;
+};
+
+struct Material {                          // Surface material data.
+   vec3  ambient;
+   vec3  diffuse;
+   vec3  specular;
+   float power;
+};
+
+struct Sphere {                            // Sphere object data.
+   vec3     center;
+   float    radius;
+   Material material;
+};
+
+uniform Light uLights[NLIGHTS];            // All the lights.
+uniform Sphere uSpheres[NSPHERES];         // All the spheres.
+
+vec2 raytraceSphere(vec3 V, vec3 W, Sphere S) {
+   S.radius = (1.5 * sin(noise(S.center)) > S.radius)
+               ? 1.5 * sin(noise(S.center)) : S.radius;
+   V -= S.center;
+   float B = 2. * dot(V, W);
+   float C = dot(V, V) - S.radius * S.radius;
+   float discrim = B*B - 4.*C;
+   vec2 t = vec2(1000., 1000.);
+   if (discrim > 0.)
+      t = vec2(-B - discrim, -B + discrim) / 2.;
+   return t.x > 0. ? t : vec2(1000., 1000.);
+}
+
+vec3 backgroundColor(vec3 dir) {
+   float t = .5 - .5 * dir.y;
+   return mix(vec3(.2,.01,.01), vec3(.01,.01,.1), 1. - t * t);
+}
+
+vec3 phong(vec3 P, vec3 N, vec3 E, Material C) {
+   vec3 c = C.ambient * backgroundColor(N);       // Ambient color
+   for (int i = 0 ; i < NLIGHTS ; i++) { // Loop through lights
+      vec3 L = normalize(uLights[i].direction);
+      vec2 t;
+      for (int j = 0 ; j < NSPHERES ; j++) {// Loop through spheres.
+         t = raytraceSphere(P+.001*L, L, uSpheres[j]);
+         if (t.x < 1000.)// If any casts a shadow then stop looping.
+            break;
+      }
+      if (t.x == 1000.) {                      // If not in shadow:
+         float d = max(0., dot(N, L));                // Diffuse
+         vec3  R = reflect(-L, N);
+         float s = pow(max(0., dot(E, R)), C.power);  // Specular
+         c += uLights[i].color
+              * (d * C.diffuse + s * C.specular * .1*C.power);
+      }
+   }
+   return c;
+}
+
+Material C;
+vec3 V, W, P, E, N;
+
+bool raytrace() {
+   float distance = 1000.;
+   for (int i = 0 ; i < NSPHERES ; i++) {
+      vec2 t = raytraceSphere(V, W, uSpheres[i]);
+      if (t.x < distance) {                    // Properties for Obj
+         C = uSpheres[i].material;             // Material
+         P = V + t.x * W;                      // Point on sphere
+         E = -normalize(P);                    // Direction to eye
+         N = normalize(P - uSpheres[i].center);// Surface normal
+         distance = t.x;
+      }
+   }
+   return distance < 1000.;
+}
+
+void main() {
+   vec3 c = vec3(0.,0.,0.);
+
+   V = vec3(0.,0.,0.);                         // Ray origin
+   W = normalize(vec3(vPos.xy, -3.));          // Ray direction
+   if (! raytrace())
+      c = backgroundColor(vPos);
+   else
+      for (int bounce = 0 ; bounce < 5 ; bounce++) {
+         float attenuation = pow(0.6, float(bounce + 1));
+         c += attenuation * phong(P, N, E, C);
+         c += .5 * attenuation * backgroundColor(W);
+         V = P + .001 * W;
+         W = reflect(W, N);
+         if (! raytrace())
+            break;
+      }
+
+   gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
+}
+---------------------------------------------------------------------
+We can also use the noise of the sphere to affect its size!
 </script>
 
 <script>

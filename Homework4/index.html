@@ -19,29 +19,29 @@
 <script id='fss_script' type='x-shader/x-fragment'>
 
 ---------------------------------------------------------------------
-varying vec3 vPos;                             // Position in image
-uniform float uTime;                           // Time
+varying vec3 vPos;                         // Position in image
+uniform float uTime;                       // Time
 
-struct Light {                                 // Light source data.
+struct Light {                             // Light source data.
    vec3 direction;
    vec3 color;
 };
 
-struct Material {                              // Surface material data.
+struct Material {                          // Surface material data.
    vec3  ambient;
    vec3  diffuse;
    vec3  specular;
    float power;
 };
 
-struct Sphere {                                // Sphere object data.
+struct Sphere {                            // Sphere object data.
    vec3     center;
    float    radius;
    Material material;
 };
 
-uniform Light uLights[NLIGHTS];                // All the lights.
-uniform Sphere uSpheres[NSPHERES];             // All the spheres.
+uniform Light uLights[NLIGHTS];            // All the lights.
+uniform Sphere uSpheres[NSPHERES];         // All the spheres.
 
 vec2 raytraceSphere(vec3 V, vec3 W, Sphere S) {
    V -= S.center;
@@ -60,20 +60,21 @@ vec3 backgroundColor(vec3 dir) {
 }
 
 vec3 phong(vec3 P, vec3 N, vec3 E, Material C) {
-   vec3 c = C.ambient * backgroundColor(N);            // Ambient color
+   vec3 c = C.ambient * backgroundColor(N);       // Ambient color
    for (int i = 0 ; i < NLIGHTS ; i++) { // Loop through lights
       vec3 L = normalize(uLights[i].direction);
       vec2 t;
-      for (int j = 0 ; j < NSPHERES ; j++) {           // Loop through spheres.
-         t = raytraceSphere(P+.001*L, L, uSpheres[j]); // If any casts a shadow
-         if (t.x < 1000.)                              // then stop looping.
+      for (int j = 0 ; j < NSPHERES ; j++) {// Loop through spheres.
+         t = raytraceSphere(P+.001*L, L, uSpheres[j]);
+         if (t.x < 1000.)// If any casts a shadow then stop looping.
             break;
       }
-      if (t.x == 1000.) {                              // If not in shadow:
-         float d = max(0., dot(N, L));                     // Diffuse value
+      if (t.x == 1000.) {                      // If not in shadow:
+         float d = max(0., dot(N, L));                // Diffuse
          vec3  R = reflect(-L, N);
-         float s = pow(max(0., dot(E, R)), C.power);       // Specular value
-         c += uLights[i].color * (d * C.diffuse + s * C.specular * .1*C.power);
+         float s = pow(max(0., dot(E, R)), C.power);  // Specular
+         c += uLights[i].color
+              * (d * C.diffuse + s * C.specular * .1*C.power);
       }
    }
    return c;
@@ -86,11 +87,11 @@ bool raytrace() {
    float distance = 1000.;
    for (int i = 0 ; i < NSPHERES ; i++) {
       vec2 t = raytraceSphere(V, W, uSpheres[i]);
-      if (t.x < distance) {
-         C = uSpheres[i].material;                // Material for this object
-         P = V + t.x * W;                         // Point on sphere
-         E = -normalize(P);                       // Direction to eye
-         N = normalize(P - uSpheres[i].center);   // Surface normal
+      if (t.x < distance) {                    // Properties for Obj
+         C = uSpheres[i].material;             // Material
+         P = V + t.x * W;                      // Point on sphere
+         E = -normalize(P);                    // Direction to eye
+         N = normalize(P - uSpheres[i].center);// Surface normal
          distance = t.x;
       }
    }

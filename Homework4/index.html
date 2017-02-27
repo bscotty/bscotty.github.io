@@ -440,7 +440,7 @@ void main() {
    gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
 }
 ---------------------------------------------------------------------
-Reverted change from the previous step.
+Reverted changes from the previous step.
 
 "Subtracting" a very small amount of noise based on vPos before the
 phong shading is done creates a smoky look. Because it's based on
@@ -660,7 +660,7 @@ void main() {
 ---------------------------------------------------------------------
 Warning: Framerates may suffer.
 Removed cool background to save the frames.
-Reverted change from the previous two steps.
+Reverted changes from the previous two steps.
 
 Adding noise to the center of the sphere can affect its position, as
 the centers of our spheres are constantly in motion. It also causes
@@ -775,11 +775,11 @@ void main() {
 ---------------------------------------------------------------------
 Warning: Framerates may suffer.
 Removed cool background to save the frames.
-Reverted change from the previous step.
+Reverted changes from the previous step.
 
 We can also use the noise of a sphere's coordinates to affect its size!
 ---------------------------------------------------------------------
-
+                                           x
 ---------------------------------------------------------------------
 varying vec3 vPos;                         // Position in image
 uniform float uTime;                       // Time
@@ -824,6 +824,7 @@ vec3 backgroundColor(vec3 dir) {
 
 vec3 phong(vec3 P, vec3 N, vec3 E, Material C) {
    vec3 c = C.ambient * backgroundColor(N);       // Ambient color
+   c /= 2.5 * (noise(4. * P));
    for (int i = 0 ; i < NLIGHTS ; i++) { // Loop through lights
       vec3 L = normalize(uLights[i].direction);
       vec2 t;
@@ -882,7 +883,347 @@ void main() {
    gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
 }
 ---------------------------------------------------------------------
+Reverted changes from the previous steps.
 
+Dividing by noise produces some interesting results as well. First,
+we can do it on the spheres, during phong shading. Divide the ambient
+color by a noise function of the point on the sphere.
+
+---------------------------------------------------------------------
+                                           xx
+---------------------------------------------------------------------
+varying vec3 vPos;                         // Position in image
+uniform float uTime;                       // Time
+
+struct Light {                             // Light source data.
+   vec3 direction;
+   vec3 color;
+};
+
+struct Material {                          // Surface material data.
+   vec3  ambient;
+   vec3  diffuse;
+   vec3  specular;
+   float power;
+};
+
+struct Sphere {                            // Sphere object data.
+   vec3     center;
+   float    radius;
+   Material material;
+};
+
+uniform Light uLights[NLIGHTS];            // All the lights.
+uniform Sphere uSpheres[NSPHERES];         // All the spheres.
+
+vec2 raytraceSphere(vec3 V, vec3 W, Sphere S) {
+   V -= S.center;
+   float B = 2. * dot(V, W);
+   float C = dot(V, V) - S.radius * S.radius;
+   float discrim = B*B - 4.*C;
+   vec2 t = vec2(1000., 1000.);
+   if (discrim > 0.)
+      t = vec2(-B - discrim, -B + discrim) / 2.;
+   return t.x > 0. ? t : vec2(1000., 1000.);
+}
+
+vec3 backgroundColor(vec3 dir) {
+   float t = .5 - .5 * dir.y;
+   return mix(vec3(.2,.01,.01), vec3(.01,.01,.1), 1. - t * t) *
+               (turbulence(vec3(t, t, t)) * 5.);
+}
+
+vec3 phong(vec3 P, vec3 N, vec3 E, Material C) {
+   vec3 c = C.ambient * backgroundColor(N);       // Ambient color
+   c /= 2.5 * (noise(4. * P));
+   c /= (noise(vPos));
+   for (int i = 0 ; i < NLIGHTS ; i++) { // Loop through lights
+      vec3 L = normalize(uLights[i].direction);
+      vec2 t;
+      for (int j = 0 ; j < NSPHERES ; j++) {// Loop through spheres.
+         t = raytraceSphere(P+.001*L, L, uSpheres[j]);
+         if (t.x < 1000.)// If any casts a shadow then stop looping.
+            break;
+      }
+      if (t.x == 1000.) {                      // If not in shadow:
+         float d = max(0., dot(N, L));                // Diffuse
+         vec3  R = reflect(-L, N);
+         float s = pow(max(0., dot(E, R)), C.power);  // Specular
+         c += uLights[i].color
+              * (d * C.diffuse + s * C.specular * .1*C.power);
+      }
+   }
+   return c;
+}
+
+Material C;
+vec3 V, W, P, E, N;
+
+bool raytrace() {
+   float distance = 1000.;
+   for (int i = 0 ; i < NSPHERES ; i++) {
+      vec2 t = raytraceSphere(V, W, uSpheres[i]);
+      if (t.x < distance) {                    // Properties for Obj
+         C = uSpheres[i].material;             // Material
+         P = V + t.x * W;                      // Point on sphere
+         E = -normalize(P);                    // Direction to eye
+         N = normalize(P - uSpheres[i].center);// Surface normal
+         distance = t.x;
+      }
+   }
+   return distance < 1000.;
+}
+
+void main() {
+   vec3 c = vec3(0.,0.,0.);
+
+   V = vec3(0.,0.,0.);                         // Ray origin
+   W = normalize(vec3(vPos.xy, -3.));          // Ray direction
+   if (! raytrace())
+      c = backgroundColor(vPos);
+   else
+      for (int bounce = 0 ; bounce < 5 ; bounce++) {
+         float attenuation = pow(0.6, float(bounce + 1));
+         c += attenuation * phong(P, N, E, C);
+         c += .5 * attenuation * backgroundColor(W);
+         V = P + .001 * W;
+         W = reflect(W, N);
+         if (! raytrace())
+            break;
+      }
+
+   gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
+}
+---------------------------------------------------------------------
+You can further divide it based on a noise function of the vPos.
+Notice the static line over the spheres where the vPos' noise
+function's influence is most visible. Also notice how it interacts
+with the noise already generated by the previous step's changes - the
+"darker" and "lighter" areas invert on the right side of the line,
+but remain the same on the left side of the line. However, both are
+more intense.
+---------------------------------------------------------------------
+                                           xx                                                      x
+---------------------------------------------------------------------
+varying vec3 vPos;                         // Position in image
+uniform float uTime;                       // Time
+
+struct Light {                             // Light source data.
+   vec3 direction;
+   vec3 color;
+};
+
+struct Material {                          // Surface material data.
+   vec3  ambient;
+   vec3  diffuse;
+   vec3  specular;
+   float power;
+};
+
+struct Sphere {                            // Sphere object data.
+   vec3     center;
+   float    radius;
+   Material material;
+};
+
+uniform Light uLights[NLIGHTS];            // All the lights.
+uniform Sphere uSpheres[NSPHERES];         // All the spheres.
+
+vec2 raytraceSphere(vec3 V, vec3 W, Sphere S) {
+   V -= S.center;
+   float B = 2. * dot(V, W);
+   float C = dot(V, V) - S.radius * S.radius;
+   float discrim = B*B - 4.*C;
+   vec2 t = vec2(1000., 1000.);
+   if (discrim > 0.)
+      t = vec2(-B - discrim, -B + discrim) / 2.;
+   return t.x > 0. ? t : vec2(1000., 1000.);
+}
+
+vec3 backgroundColor(vec3 dir) {
+   float t = .5 - .5 * dir.y;
+   return mix(vec3(.2,.01,.01), vec3(.01,.01,.1), 1. - t * t) *
+               (turbulence(vec3(t, t, t)) * 5.);
+}
+
+vec3 phong(vec3 P, vec3 N, vec3 E, Material C) {
+   vec3 c = C.ambient * backgroundColor(N);       // Ambient color
+   c /= 2.5 * (noise(4. * P));
+   c /= (noise(vPos));
+   for (int i = 0 ; i < NLIGHTS ; i++) { // Loop through lights
+      vec3 L = normalize(uLights[i].direction);
+      vec2 t;
+      for (int j = 0 ; j < NSPHERES ; j++) {// Loop through spheres.
+         t = raytraceSphere(P+.001*L, L, uSpheres[j]);
+         if (t.x < 1000.)// If any casts a shadow then stop looping.
+            break;
+      }
+      if (t.x == 1000.) {                      // If not in shadow:
+         float d = max(0., dot(N, L));                // Diffuse
+         vec3  R = reflect(-L, N);
+         float s = pow(max(0., dot(E, R)), C.power);  // Specular
+         c += uLights[i].color
+              * (d * C.diffuse + s * C.specular * .1*C.power);
+      }
+   }
+   return c;
+}
+
+Material C;
+vec3 V, W, P, E, N;
+
+bool raytrace() {
+   float distance = 1000.;
+   for (int i = 0 ; i < NSPHERES ; i++) {
+      vec2 t = raytraceSphere(V, W, uSpheres[i]);
+      if (t.x < distance) {                    // Properties for Obj
+         C = uSpheres[i].material;             // Material
+         P = V + t.x * W;                      // Point on sphere
+         E = -normalize(P);                    // Direction to eye
+         N = normalize(P - uSpheres[i].center);// Surface normal
+         distance = t.x;
+      }
+   }
+   return distance < 1000.;
+}
+
+void main() {
+   vec3 c = vec3(0.,0.,0.);
+
+   V = vec3(0.,0.,0.);                         // Ray origin
+   W = normalize(vec3(vPos.xy, -3.));          // Ray direction
+   if (! raytrace())
+      c = backgroundColor(vPos);
+   else
+      for (int bounce = 0 ; bounce < 5 ; bounce++) {
+         float attenuation = pow(0.6, float(bounce + 1));
+         c += attenuation * phong(P, N, E, C);
+         c += .5 * attenuation * backgroundColor(W);
+         V = P + .001 * W;
+         W = reflect(W, N);
+         if (! raytrace())
+            break;
+      }
+   c += 10. * noise(vPos);
+   gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
+}
+---------------------------------------------------------------------
+By adding the noise function on the vPos from everything right
+before the fragments are colored in by the shader, we can see its
+overall affect.
+---------------------------------------------------------------------
+                                           xx                                            x          x
+---------------------------------------------------------------------
+varying vec3 vPos;                         // Position in image
+uniform float uTime;                       // Time
+
+struct Light {                             // Light source data.
+   vec3 direction;
+   vec3 color;
+};
+
+struct Material {                          // Surface material data.
+   vec3  ambient;
+   vec3  diffuse;
+   vec3  specular;
+   float power;
+};
+
+struct Sphere {                            // Sphere object data.
+   vec3     center;
+   float    radius;
+   Material material;
+};
+
+uniform Light uLights[NLIGHTS];            // All the lights.
+uniform Sphere uSpheres[NSPHERES];         // All the spheres.
+
+vec2 raytraceSphere(vec3 V, vec3 W, Sphere S) {
+   V -= S.center;
+   float B = 2. * dot(V, W);
+   float C = dot(V, V) - S.radius * S.radius;
+   float discrim = B*B - 4.*C;
+   vec2 t = vec2(1000., 1000.);
+   if (discrim > 0.)
+      t = vec2(-B - discrim, -B + discrim) / 2.;
+   return t.x > 0. ? t : vec2(1000., 1000.);
+}
+
+vec3 backgroundColor(vec3 dir) {
+   float t = .5 - .5 * dir.y;
+   return mix(vec3(.2,.01,.01), vec3(.01,.01,.1), 1. - t * t) *
+               (turbulence(vec3(t, t, t)) * 5.);
+}
+
+vec3 phong(vec3 P, vec3 N, vec3 E, Material C) {
+   vec3 c = C.ambient * backgroundColor(N);       // Ambient color
+   c /= 2.5 * (noise(4. * P));
+   c /= (noise(vPos));
+   for (int i = 0 ; i < NLIGHTS ; i++) { // Loop through lights
+      vec3 L = normalize(uLights[i].direction);
+      vec2 t;
+      for (int j = 0 ; j < NSPHERES ; j++) {// Loop through spheres.
+         t = raytraceSphere(P+.001*L, L, uSpheres[j]);
+         if (t.x < 1000.)// If any casts a shadow then stop looping.
+            break;
+      }
+      if (t.x == 1000.) {                      // If not in shadow:
+         float d = max(0., dot(N, L));                // Diffuse
+         vec3  R = reflect(-L, N);
+         float s = pow(max(0., dot(E, R)), C.power);  // Specular
+         c += uLights[i].color
+              * (d * C.diffuse + s * C.specular * .1*C.power);
+      }
+   }
+   return c;
+}
+
+Material C;
+vec3 V, W, P, E, N;
+
+bool raytrace() {
+   float distance = 1000.;
+   for (int i = 0 ; i < NSPHERES ; i++) {
+      vec2 t = raytraceSphere(V, W, uSpheres[i]);
+      if (t.x < distance) {                    // Properties for Obj
+         C = uSpheres[i].material;             // Material
+         P = V + t.x * W;                      // Point on sphere
+         E = -normalize(P);                    // Direction to eye
+         N = normalize(P - uSpheres[i].center);// Surface normal
+         distance = t.x;
+      }
+   }
+   return distance < 1000.;
+}
+
+void main() {
+   vec3 c = vec3(0.,0.,0.);
+
+   V = vec3(0.,0.,0.);                         // Ray origin
+   W = normalize(vec3(vPos.xy, -3.));          // Ray direction
+   if (! raytrace()) {
+      c = backgroundColor(vPos);
+      c -= 0.5 * noise(vPos);
+   } else
+      for (int bounce = 0 ; bounce < 5 ; bounce++) {
+         float attenuation = pow(0.6, float(bounce + 1));
+         c += attenuation * phong(P, N, E, C);
+         c += .5 * attenuation * backgroundColor(W);
+         V = P + .001 * W;
+         W = reflect(W, N);
+         if (! raytrace())
+            break;
+      }
+
+   gl_FragColor = vec4(sqrt(c), 1.);           // Final pixel color
+}
+---------------------------------------------------------------------
+Reverted changes from the previous step.
+
+Alternatively, we can only apply (a more subdued version of) the
+vPos'noise function to the background where we're not drawing
+anything on spheres, adding a bit more to our background, and
+simulating an interaction between the background and the spheres.
 </script>
 
 <script>

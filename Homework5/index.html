@@ -2,21 +2,11 @@
 
     <tr>
         <td>
-            <canvas id=canvas1 width=400 height=300> </canvas>
+            <canvas id=canvas1 width=640 height=480> </canvas>
         </td>
         <td width=50></td>
         <td>
-            Hi, I am a sleepy bird.
-        </td>
-    </tr>
-
-    <tr>
-        <td>
-            <canvas id=canvas2 width=400 height=300> </canvas>
-        </td>
-        <td width=50></td>
-        <td>
-            Hi, I am a bird who has had its morning espresso.
+            Click for some pretty colors!
         </td>
     </tr>
 
@@ -25,15 +15,29 @@
 <script src=drawlib1.js></script>
 <script>
     canvas1.update = function (g) {
-        let blue = 128 + Math.floor(128 * Math.sin(10 * time));
+        let red   = 128 + Math.floor(128 * Math.sin(time));
+        let green = 128 + Math.floor(128 * Math.sin(time + 23));
+        let blue  = 128 + Math.floor(128 * Math.sin(time + 46));
         //blue = 0;
 
-        g.fillStyle = 'rgb(255,128,' + blue + ')';
-        g.lineWidth = 20;
+        g.fillStyle = 'rgb(255,255,255)';
+        g.lineWidth = 10;
         g.lineCap = 'round';
         g.lineJoin = 'round';
 
         g.beginPath();
+
+//        let x = this.cursor.x;
+//        let y = this.cursor.y;
+//        let z = this.cursor.z;
+        if (z == 0) {
+//            x = this.width / 2;
+//            y = this.height / 2;
+            g.strokeStyle = 'rgb(0,0,0)'
+        } else {
+            g.strokeStyle = 'rgb(' + red + ',' + green + ',' + blue + ')';
+        }
+
         g.moveTo(0, 0);
         g.lineTo(this.width, 0);
         g.lineTo(this.width, this.height);
@@ -43,62 +47,39 @@
 
         g.beginPath();
 
-        let x = this.cursor.x;
-        let y = this.cursor.y;
-        let z = this.cursor.z;
-        if (z == 0) {
-            x = this.width / 2;
-            y = this.height / 2;
+        if (z !== 0) {
+            g.moveTo(this.cursor.x, this.cursor.y);
+            g.lineTo(this.cursor.x, this.cursor.y);
+
+            g.strokeStyle = 'rgb(' + blue + ',' + red + ',' + green + ')';
+
+            for(let i = 0; i < 42; i++) {
+                let newX = this.cursor.x + 40 * (Math.sin(time + i * 0.15));
+                let newY = this.cursor.y + 40 * (Math.cos(time + i * 0.15));
+                g.moveTo(newX, newY);
+                g.lineTo(newX, newY);
+
+            }
+
+            g.stroke();
+            g.beginPath();
+
+            g.strokeStyle = 'rgb(' + green + ',' + blue + ',' + red + ')';
+
+            for(let i = 0; i < 84; i++) {
+                if(i < 14 || (i >= 28 && i < 42) || (i >= 56 && i < 70)) {
+                    let newX = this.cursor.x + 80 * (Math.sin(time + i * 0.075));
+                    let newY = this.cursor.y + 80 * (Math.cos(time + i * 0.075));
+                    g.moveTo(newX, newY);
+                    g.lineTo(newX, newY);
+                }
+            }
         }
 
-        let angle = Math.sin(time);
-        let flapY = 100 * Math.sin(angle);
-        let flapX = 100 * Math.cos(angle);
-        g.moveTo(x - flapX, y - flapY);
-        g.lineTo(x, y);
-        g.lineTo(x + flapX, y - flapY);
         g.stroke();
     };
 
-    canvas2.update = function (g) {
-        g.lineWidth = 5;
-
-        g.beginPath();
-        g.moveTo(0, 0);
-        g.lineTo(this.width, 0);
-        g.lineTo(this.width, this.height);
-        g.lineTo(0, this.height);
-        g.lineTo(0, 0);
-        g.stroke();
-
-        let x = this.cursor.x;
-        let y = this.cursor.y;
-        let z = this.cursor.z;
-        if (z == 0) {
-            x = this.width / 2 + 30 * Math.sin(time);
-            y = this.height / 2 + 30 * Math.cos(time);
-        }
-
-        let freq = z == 0 ? 6 : 12;
-        let f = .2;
-        let angle = -2 * f * (Math.sin(freq * time) - 0.5);
-        let angle2 = f * (Math.cos(freq * time) - 1);
-
-        let flapY = 40 * Math.sin(angle);
-        let flapX = 40 * Math.cos(angle);
-
-        let flapY2 = 40 * Math.sin(2 * angle2);
-        let flapX2 = 40 * Math.cos(2 * angle2);
-
-        g.moveTo(x - flapX - flapX2, y - flapY - flapY2);
-        g.lineTo(x - flapX, y - flapY);
-        g.lineTo(x, y);
-        g.lineTo(x + flapX, y - flapY);
-        g.lineTo(x + flapX + flapX2, y - flapY - flapY2);
-        g.stroke();
-    };
-
-    draw2DCanvases([canvas1, canvas2]);
+    draw2DCanvases([canvas1]);
 </script>
 
 

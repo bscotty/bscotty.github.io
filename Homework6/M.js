@@ -12,8 +12,11 @@ const M = {
 
 // Set m values to identity matrix.
 M.identity = function (m) {
-    m = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
-    return m;
+    m.fill(0, 0, 15);
+    m[0] = 1;
+    m[5] = 1;
+    m[10] = 1;
+    m[15] = 1;
 };
 
 // Pop from a stack to set the 16 values of m.
@@ -26,44 +29,32 @@ M.restore = function (m) {
 
 // Modify m, rotating about the X axis.
 M.rotateX = function (m, radians) {
-    // let rotate = [1,0,0,0,
-    //      0,Math.cos(radians),Math.sin(radians),0,
-    //      0,-Math.sin(radians),Math.cos(radians),0,
-    //      0,0,0,1
-    // ];
-    // M.matrixMultiply(rotate, m, m);
-    m[5] = Math.cos(radians);
-    m[6] = Math.sin(radians);
-    m[9] = -Math.sin(radians);
-    m[10] = Math.cos(radians);
+    let rotate = [1,0,0,0,
+         0,Math.cos(radians),Math.sin(radians),0,
+         0,-Math.sin(radians),Math.cos(radians),0,
+         0,0,0,1
+    ];
+    M.matrixMultiply(rotate, m, m);
 };
 
 // Modify m, rotating about the Y axis.
 M.rotateY = function (m, radians) {
-    // let rotate = [Math.cos(radians),0,-Math.sin(radians),0,
-    //     0,1,0,0,
-    //     Math.sin(radians),0,Math.cos(radians),0,
-    //     0,0,0,1
-    // ];
-    // M.matrixMultiply(m, rotate, m);
-    m[0] = Math.cos(radians);
-    m[2] = -Math.sin(radians);
-    m[8] = Math.sin(radians);
-    m[10] = Math.cos(radians);
+    let rotate = [Math.cos(radians),0,-Math.sin(radians),0,
+        0,1,0,0,
+        Math.sin(radians),0,Math.cos(radians),0,
+        0,0,0,1
+    ];
+    M.matrixMultiply(m, rotate, m);
 };
 
 // Modify m, rotating about the Z axis.
 M.rotateZ = function (m, radians) {
-    // let rotate = [Math.cos(radians),Math.sin(radians),0,0,
-    //     -Math.sin(radians),Math.cos(radians),0,0,
-    //     0,0,1,0,
-    //     0,0,0,1
-    // ];
-    // M.matrixMultiply(rotate, m, m);
-    m[0] = Math.cos(radians);
-    m[1] = Math.sin(radians);
-    m[4] = -Math.sin(radians);
-    m[5] = Math.cos(radians);
+    let rotate = [Math.cos(radians),Math.sin(radians),0,0,
+        -Math.sin(radians),Math.cos(radians),0,0,
+        0,0,1,0,
+        0,0,0,1
+    ];
+    M.matrixMultiply(rotate, m, m);
 };
 
 // Push the 16 values of m onto a stack.
@@ -83,47 +74,35 @@ M.scale = function (m, v) {
         x = y = z = v;
     }
 
-    // let scale = [x,0,0,0,
-    //     0,y,0,0,
-    //     0,0,z,0,
-    //     0,0,0,1
-    // ];
-    // M.matrixMultiply(m, scale, m);
-    m[0] = x;
-    m[5] = y;
-    m[10] = z;
+    let scale = [x,0,0,0,
+        0,y,0,0,
+        0,0,z,0,
+        0,0,0,1
+    ];
+    M.matrixMultiply(m, scale, m);
 };
 
 // Return vec v transformed by matrix m.
-// M.transform = function (m, v) {
-//     if(!(v instanceof Array && (v.length === 3 || v.length === 4))) {
-//         return v;
-//     }
-//     //v[0] = (m[0] * v[0] + m[4] * v[1] + m[8] * v[2] + m[12] * v[3]);
-//     for(let i = 0; i < v.length; i++) {
-//         if(v.length === 3) {
-//             v[i] = (m[i] * v[0] + m[4 + i] * v[1] + m[8 + i] * v[2]);
-//         } else {
-//             v[i] = (m[i] * v[0] + m[4 + i] * v[1] + m[8 + i] * v[2] + m[12 + i] * v[3]);
-//         }
-//     }
-//     return v;
-// };
+M.transform = function (m, v) {
+    if(!(v instanceof Array && (v.length === 3 || v.length === 4))) {
+        return v;
+    }
+    if(v.length === 3) {
+        v.push(1);
+    }
+    const x = v[0], y = v[1], z = v[2], w = v[3];
+    const final = [0,0,0,0];
+
+    for(let i = 0; i < v.length; i++) {
+        final[i] = (m[i] * x + m[4 + i] * y + m[8 + i] * z + m[12 + i] * w);
+    }
+    return final;
+};
 
 // Modify m, translating by v[0],v[1],v[2].
-// M.translate = function (m, v) {
-//     if(!(v instanceof Array && v.length >= 3)) {
-//         return m;
-//     }
-//
-//     m = [1,0,0,0,
-//         0,1,0,0,
-//         0,0,1,0,
-//         v[1],v[2],v[3],1
-//     ];
-//     // m = M.translationMatrix(v);
-//     return m;
-// };
+M.translate = function (m, v) {
+    M.matrixMultiply(m, M.translationMatrix(v), m);
+};
 
 //////////////////////////////////////////////////////////////////////////////
 // I have given you a head start by implementing some of the methods for you.

@@ -21,10 +21,10 @@ M.identity = function (m) {
 
 // Pop from a stack to set the 16 values of m.
 M.restore = function (m) {
-    if(M.stack.length == 16) {
-        m = M.stack.slice();
+    for(let i = 0; i < M.stack.length; i++) {
+        m[i] = M.stack[i];
+        M.stack[i] = 0;
     }
-    return m;
 };
 
 // Modify m, rotating about the X axis.

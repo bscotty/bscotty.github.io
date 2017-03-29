@@ -1,120 +1,120 @@
-
 <table>
 
-<tr>
-<td><canvas id=canvas1 width=600 height=400></td>
-<td width=50></td>
-<td valign=top>
-Parametric meshes of shapes.
-</td>
-</tr>
+    <tr>
+        <td>
+            <canvas id=canvas1 width=600 height=400></canvas>
+        </td>
+        <td width=50></td>
+        <td valign=top>
+            Parametric meshes of shapes.
+        </td>
+    </tr>
 
 </table>
 
 <script src=drawlib1.js></script>
-<script src=M.js></script>
+<script src=../Homework6/M.js></script>
 <script src=S.js></script>
 <script>
 
-   // MATRIX IS AN ARRAY OF 16 NUMBERS.
+    // MATRIX IS AN ARRAY OF 16 NUMBERS.
 
-   var m = [0,0,0,0, 0,0,0,0, 0,0,0,0, 0,0,0,0];
+    const m = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
-   canvas1.update = function(g) {
-      var p, C, c, canvas = this;
+    canvas1.update = function (g) {
+        let canvas = this;
 
-      // DRAW A SET OF CURVES IN 3D WITH PERSPECTIVE PROJECTION.
+        // DRAW A SET OF CURVES IN 3D WITH PERSPECTIVE PROJECTION.
 
-      function drawCurves(m, C) {
-         var i, n, p, cv, x, y, z, fl = 5,
-	     w = canvas.width;
-	     h = canvas.height;
+        function drawCurves(m, C) {
+            let i, n, p, cv, x, y, z, fl = 5;
+            let w = canvas.width;
+            let h = canvas.height;
+            // LOOP THROUGH CURVES.
 
-         // LOOP THROUGH CURVES.
+            for (n = 0; n < C.length; n++) {
 
-         for (n = 0 ; n < C.length ; n++) {
+                // BUILD THE PROJECTED CURVE, POINT BY POINT.
 
-            // BUILD THE PROJECTED CURVE, POINT BY POINT.
+                cv = [];
+                for (i = 0; i < C[n].length; i++) {
 
-	    cv = [];
-	    for (i = 0 ; i < C[n].length ; i++) {
+                    // TRANSFORM POINT
 
-	       // TRANSFORM POINT
+                    p = M.transform(m, C[n][i]);
 
-	       p = M.transform(m, C[n][i]);
+                    // RETRIEVE COORDINATES FROM TRANSFORMED POINT
 
-	       // RETRIEVE COORDINATES FROM TRANSFORMED POINT
+                    x = p[0];
+                    y = p[1];
+                    z = p[2];
 
-	       x = p[0];
-	       y = p[1];
-	       z = p[2];
+                    // DO PERSPECTIVE TRANSFORM
 
-	       // DO PERSPECTIVE TRANSFORM
+                    x *= fl / (fl - z);
+                    y *= fl / (fl - z);
 
-	       x *= fl / (fl - z);
-	       y *= fl / (fl - z);
+                    // DO VIEWPORT TRANSFORM
 
-	       // DO VIEWPORT TRANSFORM
+                    x = w * x * .5 + .5 * w;
+                    y = -w * y * .5 + .5 * h;
+                    cv.push([x, y]);
+                }
 
-	       x =  w * x * .5 + .5 * w;
-	       y = -w * y * .5 + .5 * h;
-	       cv.push([x, y]);
+                // DRAW THE PROJECTED CURVE ONTO THE CANVAS.
+
+                g.beginPath();
+                g.moveTo(cv[0][0], cv[0][1]);
+                for (i = 1; i < cv.length; i++)
+                    g.lineTo(cv[i][0], cv[i][1]);
+                g.stroke();
             }
+        }
 
-	    // DRAW THE PROJECTED CURVE ONTO THE CANVAS.
+        g.lineCap = 'round';
+        g.lineJoin = 'round';
+        g.lineWidth = 1;
 
-	    g.beginPath();
-            g.moveTo(cv[0][0], cv[0][1]);
-	    for (i = 1 ; i < cv.length ; i++)
-               g.lineTo(cv[i][0], cv[i][1]);
-	    g.stroke();
-         }
-      }
+        // OUTLINE THE CANVAS
 
-      g.lineCap = 'round';
-      g.lineJoin = 'round';
-      g.lineWidth = 1;
+        g.beginPath();
+        g.moveTo(0, 0);
+        g.lineTo(this.width, 0);
+        g.lineTo(this.width, this.height);
+        g.lineTo(0, this.height);
+        g.lineTo(0, 0);
+        g.stroke();
 
-      // OUTLINE THE CANVAS
+        M.identity(m);
+        M.scale(m, .5);  // Scale the scene down.
 
-      g.beginPath();
-      g.moveTo(0,0);
-      g.lineTo(this.width,0);
-      g.lineTo(this.width,this.height);
-      g.lineTo(0,this.height);
-      g.lineTo(0,0);
-      g.stroke();
+        // DRAW SHAPES.
 
-      M.identity(m);
-      M.scale(m, .5);  // Scale the scene down.
+        M.save(m);
+        M.rotateY(m, time);
+        M.rotateX(m, time / 2);
 
-      // DRAW SHAPES.
+        // DRAW AN OPEN PARAMETRIC-MESH TUBE.
 
-      M.save(m);
-         M.rotateY(m, time);
-         M.rotateX(m, time/2);
+        drawCurves(m, S.parametricMesh(S.tube, 16, 4));
 
-	 // DRAW AN OPEN PARAMETRIC-MESH TUBE.
+        // DRAW OCTAHEDRON WITH THICK LINES
 
-         drawCurves(m, S.parametricMesh(S.tube, 16, 4));
+        g.lineWidth = 5;
+        drawCurves(m, [
+            [[-1, 0, 0], [0, -1, 0], [0, 0, -1], [-1, 0, 0]],
+            [[1, 0, 0], [0, -1, 0], [0, 0, -1], [1, 0, 0]],
+            [[-1, 0, 0], [0, 1, 0], [0, 0, -1], [-1, 0, 0]],
+            [[1, 0, 0], [0, 1, 0], [0, 0, -1], [1, 0, 0]],
+            [[-1, 0, 0], [0, -1, 0], [0, 0, 1], [-1, 0, 0]],
+            [[1, 0, 0], [0, -1, 0], [0, 0, 1], [1, 0, 0]],
+            [[-1, 0, 0], [0, 1, 0], [0, 0, 1], [-1, 0, 0]],
+            [[1, 0, 0], [0, 1, 0], [0, 0, 1], [1, 0, 0]],]);
+        M.restore(m);
+    };
 
-         // DRAW OCTAHEDRON WITH THICK LINES
+    // WE ARE DRAWING ONLY ONE CANVAS.
 
-         g.lineWidth = 5;
-         drawCurves(m, [
-            [[-1,0,0],[0,-1,0],[0,0,-1],[-1,0,0]],
-            [[ 1,0,0],[0,-1,0],[0,0,-1],[ 1,0,0]],
-            [[-1,0,0],[0, 1,0],[0,0,-1],[-1,0,0]],
-            [[ 1,0,0],[0, 1,0],[0,0,-1],[ 1,0,0]],
-            [[-1,0,0],[0,-1,0],[0,0, 1],[-1,0,0]],
-            [[ 1,0,0],[0,-1,0],[0,0, 1],[ 1,0,0]],
-            [[-1,0,0],[0, 1,0],[0,0, 1],[-1,0,0]],
-            [[ 1,0,0],[0, 1,0],[0,0, 1],[ 1,0,0]], ]);
-      M.restore(m);
-   }
-
-   // WE ARE DRAWING ONLY ONE CANVAS.
-
-   drawCanvases([canvas1]);
+    drawCanvases([canvas1]);
 </script>
 

@@ -6,7 +6,7 @@
         </td>
         <td width=50></td>
         <td valign=top>
-            Parametric meshes of shapes.
+            Parametric meshes of shapes. Done by the professor as our example.
         </td>
     </tr>
     <tr>
@@ -15,8 +15,9 @@
         </td>
         <td width=50></td>
         <td valign=top>
-            Parametric ball going into a parametric taurus. <br>
-            Sort of like a basketball going into a hoop, if the hoop was rather thick.
+            Parametric sphere going into/through a parametric torus. <br>
+            Sort of like a basketball going into a hoop, if the hoop was rather thick?<br>
+            Done by me for homework.
         </td>
     </tr>
 
@@ -176,7 +177,7 @@
 
         g.lineCap = 'round';
         g.lineJoin = 'round';
-        g.lineWidth = 3;
+        g.lineWidth = 1;
 
         g.beginPath();
         g.moveTo(0, 0);
@@ -185,6 +186,8 @@
         g.lineTo(0, this.height);
         g.lineTo(0, 0);
         g.stroke();
+
+        g.lineWidth = 3;
 
         M.identity(mSphere);
         M.scale(mSphere, .5);  // Scale the scene down.

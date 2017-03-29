@@ -29,3 +29,23 @@ S.tube = function (u, v) {
         2 * v - 1];
 };
 
+S.sphere = function(u, v) {
+    const theta = 2 * Math.PI * v;
+    const phi = Math.PI * (u - 0.5);
+    return [
+        Math.cos(theta) * Math.cos(phi),
+        Math.sin(theta) * Math.cos(phi),
+        Math.sin(phi)
+    ];
+};
+
+S.torus = function(u, v) {
+    const theta = 2 * Math.PI * u;
+    const phi = 2 * Math.PI * v;
+    const r = 0.3;
+    return [
+        Math.cos(theta) * (1 + r * Math.cos(phi)),
+        Math.sin(theta) * (1 + r * Math.cos(phi)),
+        r * Math.sin(phi)
+    ];
+};

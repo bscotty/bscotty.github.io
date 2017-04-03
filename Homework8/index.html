@@ -210,17 +210,16 @@
 
         M.identity(m);
         M.save(m);
-
         M.rotateY(m, Math.sin(time));
 
         const curves = [];
 
+        // Write each of our letters.
         addCurve(curves, B.P, B.R);
         addCurve(curves, R.P, R.R);
         addCurve(curves, Y.P, Y.R);
         addCurve(curves, A.P, A.R);
         addCurve(curves, N.P, N.R);
-
 
         this.drawCurves(m, curves);
         M.restore(m);
@@ -229,4 +228,3 @@
 
     drawCanvases([canvas1, canvas2]);
 </script>
-

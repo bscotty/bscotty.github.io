@@ -6,10 +6,22 @@
         </td>
         <td width=50></td>
         <td valign=top>
-            <h1><b>Example of Hermite curve.</b></h1>
-            <A HREF="indexA.html">More Basic Example (as written by professor)</A>
+            <h1><b>Example of Hermite curve</b></h1>
+            <p>(as written by Professor Perlin.)</p>
+            <h2>Further Examples</h2>
+            <A HREF="indexA.html">More Basic Example (as written by Professor Perlin)</A>
             <br><br>
-            <A HREF="indexB.html">Animated Curve Example (as written by professor)</A>
+            <A HREF="indexB.html">2D Animated Curve Example (as written by Professor Perlin)</A>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <canvas id=canvas2 width=600 height=400></canvas>
+        </td>
+        <td width=50></td>
+        <td valign=top>
+            <h1>Multiple Multi-Spline Curves</h1>
+            <p>(as written by Bryan Scott)</p>
         </td>
     </tr>
 
@@ -23,6 +35,7 @@
     const m = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
     const Hermite = [2, -3, 0, 1, -2, 3, 0, 0, 1, -2, 1, 0, 1, -1, 0, 0];
+    const Bezier = [-1, 3, -3, 1, 3, -6, 3, 0, -3, 3, 0, 0, 1, 0, 0, 0];
 
     function cubic(A, t) {
         return A[0] * t * t * t + A[1] * t * t + A[2] * t + A[3];
@@ -78,6 +91,142 @@
         M.restore(m);
     };
 
-    drawCanvases([canvas1]);
+    // A Way to Shorthand our curve creation
+    function addCurve(curves, P, R) {
+        for (let n = 0; n < P.length - 1; n++) {
+            const X = M.transform(Hermite, [P[n][0], P[n + 1][0], R[n][0], R[n + 1][0]]);
+            const Y = M.transform(Hermite, [P[n][1], P[n + 1][1], R[n][1], R[n + 1][1]]);
+            const Z = M.transform(Hermite, [P[n][2], P[n + 1][2], R[n][2], R[n + 1][2]]);
+
+            const curve = [];
+            for (let t = 0; t < 1.0001; t += 1 / 20) {
+                curve.push([cubic(X, t), cubic(Y, t), cubic(Z, t)]);
+            }
+            curves.push(curve);
+        }
+    }
+
+    // Some Objects with Points and Derivative arrays. They'll be the letters in the Name Curve I draw.
+    const upShift = .25;
+    //const upShift = .0;
+    const B = {
+        P: [
+            [-.75, -.25, 0],
+            [-.75, .55, 0],
+            [-.5, .35, -.05],
+            [-.75, .15, 0],
+            [-.5, -.05, .05],
+            [-.75, -.25, 0],
+        ],
+        R: [
+            [0, 0, 0],
+            [0, 0, 0],
+            [0, -1, 0],
+            [0, 0, 0],
+            [0, -1, 0],
+            [0, 0, 0,]
+        ]
+    };
+    const R = {
+        P: [
+            [-.45, -.25, 0],
+            [-.45, .05, -.05],
+            [-.45, -.25, 0],
+            [-.45, -.05, 0],
+            [-.28, .05, .05]
+        ],
+        R: [
+            [0, 0, 0],
+            [.05, 0, 0],
+            [0, 0, 0],
+            [.05, .5, 0],
+            [0, 0, 0],
+        ]
+    };
+    const Y = {
+        P: [
+            [-.24, .07, 0],
+            [-.12, -.25, 0],
+            [-.02, .05, .05],
+            [-.17, -.65, 0],
+            [.08, -.25, -.05],
+        ],
+        R: [
+            [.5, 0, 0],
+            [.75, 0, 0],
+            [-.25, -.25, 0],
+            [-.75, 0, 0],
+            [0, 0, 0],
+        ]
+    };
+    const A = {
+        P: [
+            [.13, .03, .05],
+            [.33, .05, .01],
+            [.13, -.2, 0],
+            [.33, .05, -.01],
+            [.38, -.2, -.05],
+        ],
+        R: [
+            [-.25, -.25, 0],
+            [-.25, .25, 0],
+            [.25, -.2, 0],
+            [-.2, .2, 0],
+            [.25, .2, 0],
+        ]
+    };
+    const N = {
+        P: [
+            [.4, .05, -.05],
+            [.42, -.2, .05],
+            [.6, .05, 0],
+            [.65, -.25, 0],
+        ],
+        R: [
+            [.25, 0, 0],
+            [-.08, .5, 0],
+            [.25, -.2, 0],
+            [0, 0, 0],
+        ]
+    };
+
+
+    // Canvas2 Update Function
+    canvas2.update = function (g) {
+        g.lineCap = 'round';
+        g.lineJoin = 'round';
+        g.lineWidth = 1;
+
+        // OUTLINE THE CANVAS
+
+        g.beginPath();
+        g.moveTo(0, 0);
+        g.lineTo(this.width, 0);
+        g.lineTo(this.width, this.height);
+        g.lineTo(0, this.height);
+        g.lineTo(0, 0);
+        g.stroke();
+
+
+        M.identity(m);
+        M.save(m);
+
+        M.rotateY(m, Math.sin(time));
+
+        const curves = [];
+
+        addCurve(curves, B.P, B.R);
+        addCurve(curves, R.P, R.R);
+        addCurve(curves, Y.P, Y.R);
+        addCurve(curves, A.P, A.R);
+        addCurve(curves, N.P, N.R);
+
+
+        this.drawCurves(m, curves);
+        M.restore(m);
+
+    };
+
+    drawCanvases([canvas1, canvas2]);
 </script>
 

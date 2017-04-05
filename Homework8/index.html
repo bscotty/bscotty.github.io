@@ -39,8 +39,9 @@
             <br><h2>Bezier-Based Splines <br>(as written by Bryan Scott)</h2>
             <p>
                 The thicker line is the actual Bezier splines. The thinner lines are a direct point-to-point line
-                that do not take the curvature of the spline into consideration. This can be achieved with the Bezier
-                model by using an identical set of values as the P values for the R values.
+                that do not take the curvature of the spline into consideration. Similar to the previous Hermite
+                example, This can be achieved with the Bezier model by using an identical set of values as the P values
+                for the R values.
             </p>
         </td>
     </tr>
@@ -64,7 +65,7 @@
     canvas1.update = function (g) {
         g.lineCap = 'round';
         g.lineJoin = 'round';
-        g.lineWidth = 5;
+        g.lineWidth = 3;
 
         // OUTLINE THE CANVAS
 
@@ -132,7 +133,7 @@
     canvas2.update = function (g) {
         g.lineCap = 'round';
         g.lineJoin = 'round';
-        g.lineWidth = 5;
+        g.lineWidth = 3;
 
         // OUTLINE THE CANVAS
 
@@ -258,7 +259,7 @@
     canvas3.update = function (g) {
         g.lineCap = 'round';
         g.lineJoin = 'round';
-        g.lineWidth = 5;
+        g.lineWidth = 3;
 
         // OUTLINE THE CANVAS
 
@@ -279,18 +280,18 @@
 
         const Bb = {
             P: [
-                [-.2,-.2,0],
-                [-.2,.2,0],
-                [.2,.2,0],
-                [.2,-.2,0],
-                [-.2,-.2,0],
+                [-.2,-.2, 0],
+                [-.2, .2, 0],
+                [ .2, .2, 0],
+                [ .2,-.2, 0],
+                [-.2,-.2, 0],
             ],
             R: [
-                [.2,.2,0],
-                [.2,-.2,0],
-                [-.2,-.2,0],
-                [-.2,.2,0],
-                [.2,.2,0],
+                [ .2, .2, 0],
+                [ .2,-.2, 0],
+                [-.2,-.2, 0],
+                [-.2, .2, 0],
+                [ .2, .2, 0],
             ],
         };
 

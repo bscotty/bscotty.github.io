@@ -38,10 +38,8 @@
         <td valign=top>
             <br><h2>Bezier-Based Splines <br>(as written by Bryan Scott)</h2>
             <p>
-                The thicker line is the actual Bezier splines. The thinner lines are a direct point-to-point line
-                that do not take the curvature of the spline into consideration. Similar to the previous Hermite
-                example, This can be achieved with the Bezier model by using an identical set of values as the P values
-                for the R values.
+                The thick line is the actual bezier curve. The blue circles are the points in space that our bezier
+                curve are based on.
             </p>
         </td>
     </tr>
@@ -115,11 +113,25 @@
     };
 
     // A Way to Shorthand our curve creation
-    function addCurve(curves, P, R, matrix) {
+    function addHermiteCurve(curves, P, R) {
         for (let n = 0; n < P.length - 1; n++) {
-            const X = M.transform(matrix, [P[n][0], P[n + 1][0], R[n][0], R[n + 1][0]]);
-            const Y = M.transform(matrix, [P[n][1], P[n + 1][1], R[n][1], R[n + 1][1]]);
-            const Z = M.transform(matrix, [P[n][2], P[n + 1][2], R[n][2], R[n + 1][2]]);
+            const X = M.transform(Hermite, [P[n][0], P[n + 1][0], R[n][0], R[n + 1][0]]);
+            const Y = M.transform(Hermite, [P[n][1], P[n + 1][1], R[n][1], R[n + 1][1]]);
+            const Z = M.transform(Hermite, [P[n][2], P[n + 1][2], R[n][2], R[n + 1][2]]);
+
+            const curve = [];
+            for (let t = 0; t < 1.0001; t += 1 / 20) {
+                curve.push([cubic(X, t), cubic(Y, t), cubic(Z, t)]);
+            }
+            curves.push(curve);
+        }
+    }
+
+    function addBezierCurve(curves, P) {
+        for (let n = 1; n < P.length - 2; n++) {
+            const X = M.transform(Bezier, [P[n-1][0], P[n][0], P[n+1][0], P[n + 2][0]]);
+            const Y = M.transform(Bezier, [P[n-1][1], P[n][1], P[n+1][1], P[n + 2][1]]);
+            const Z = M.transform(Bezier, [P[n-1][2], P[n][2], P[n+1][2], P[n + 2][2]]);
 
             const curve = [];
             for (let t = 0; t < 1.0001; t += 1 / 20) {
@@ -235,22 +247,22 @@
 
         // Write each of our letters.
         const zeroes = [[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],];
-        addCurve(curves, B.P, B.R, Hermite);
-        addCurve(curves, R.P, R.R, Hermite);
-        addCurve(curves, Y.P, Y.R, Hermite);
-        addCurve(curves, A.P, A.R, Hermite);
-        addCurve(curves, N.P, N.R, Hermite);
+        addHermiteCurve(curves, B.P, B.R);
+        addHermiteCurve(curves, R.P, R.R);
+        addHermiteCurve(curves, Y.P, Y.R);
+        addHermiteCurve(curves, A.P, A.R);
+        addHermiteCurve(curves, N.P, N.R);
 
         this.drawCurves(m, curves);
 
         g.lineWidth = 1;
         const PToP = [];
 
-        addCurve(PToP, B.P, zeroes, Hermite);
-        addCurve(PToP, R.P, zeroes, Hermite);
-        addCurve(PToP, Y.P, zeroes, Hermite);
-        addCurve(PToP, A.P, zeroes, Hermite);
-        addCurve(PToP, N.P, zeroes, Hermite);
+        addHermiteCurve(PToP, B.P, zeroes);
+        addHermiteCurve(PToP, R.P, zeroes);
+        addHermiteCurve(PToP, Y.P, zeroes);
+        addHermiteCurve(PToP, A.P, zeroes);
+        addHermiteCurve(PToP, N.P, zeroes);
         this.drawCurves(m, PToP);
 
         M.restore(m);
@@ -274,36 +286,35 @@
 
         M.identity(m);
         M.save(m);
-        M.rotateY(m, Math.sin(time));
 
-        const curves = [];
+        let curves = [];
 
-        const Bb = {
-            P: [
-                [-.2,-.2, 0],
-                [-.2, .2, 0],
-                [ .2, .2, 0],
-                [ .2,-.2, 0],
-                [-.2,-.2, 0],
-            ],
-            R: [
-                [ .2, .2, 0],
-                [ .2,-.2, 0],
-                [-.2,-.2, 0],
-                [-.2, .2, 0],
-                [ .2, .2, 0],
-            ],
-        };
+        const Bb = [
+                [-.6,-.5, 0],
+                [-.5, .3, 0],
+                [ .4, .3, 0],
+                [ .5,-.4, 0],
+        ];
 
-        addCurve(curves, Bb.P, Bb.R, Bezier);
-
-        this.drawCurves(m, curves);
-
+        g.strokeStyle = 'blue';
         g.lineWidth = 1;
 
-        const PToP = [];
-        addCurve(PToP, Bb.P, Bb.P, Bezier);
-        this.drawCurves(m, PToP);
+        // Color our points.
+        for(let n = 0; n < Bb.length; n++) {
+            const curve = [];
+            for (let t = 0; t < 2 * Math.PI; t += .01) {
+                curve.push([Bb[n][0] + .01 * Math.cos(t), Bb[n][1] + .01 * Math.sin(t), 0]);
+            }
+            curves.push(curve);
+        }
+        this.drawCurves(m, curves);
+
+        // Draw our actual curves.
+        g.strokeStyle = 'black';
+        g.lineWidth = 3;
+        curves = [];
+        addBezierCurve(curves, Bb);
+        this.drawCurves(m, curves);
 
         M.restore(m);
     };

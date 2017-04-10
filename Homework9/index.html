@@ -3,6 +3,7 @@
     <tr>
         <td>
             <canvas id=canvas1 width=600 height=400></canvas>
+            <br>
             <button type="submit" value="Toggle Open/Closed Curve" id="open-or-closed">Toggle Open/Closed Curve</button>
         </td>
         <td width=50></td>
@@ -55,7 +56,7 @@
     ];
 
     // Allow for toggling between an open / closed curve.
-    let shouldBeOpen = true;
+    let shouldBeOpen = false;
     const button = document.querySelector('#open-or-closed');
     button.addEventListener("click", function(){
         shouldBeOpen = (shouldBeOpen !== true);

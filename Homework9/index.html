@@ -70,11 +70,11 @@
         showKeyPoints = (showKeyPoints !== true);
     });
 
-    function findPointNearCoordinates(x, y) {
+    function findPointNearCoordinates(x, y, proximity = 0.05) {
         for (let n = 0; n < P.length; n++) {
             let dx = P[n][0] - x,
                 dy = P[n][1] - y;
-            if (dx * dx + dy * dy < 0.05 * 0.05) {
+            if (dx * dx + dy * dy < proximity * proximity) {
                 return n;
             }
         }
@@ -131,6 +131,7 @@
                     if (dx * dx + dy * dy < 0.05 * 0.05) {
                         if (!(findPointNearCoordinates(cx, cy) !== -1 || this.n !== undefined)) {
                             this.point = [cx, cy, 0];
+                            this.pointIndex = n + 1;
                         }
                         break;
                     }
@@ -147,9 +148,11 @@
             P[this.n][1] = cy;
         }
 
+        // If a midpoint is selected, insert it into our point array.
         if (this.point !== undefined) {
-            P.splice(n+1, 0, this.point);
+            P.splice(this.pointIndex, 0, this.point);
             delete this.point;
+            delete this.pointIndex;
         }
 
         curve = [];

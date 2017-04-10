@@ -4,7 +4,8 @@
         <td>
             <canvas id=canvas1 width=600 height=400></canvas>
             <br>
-            <button type="submit" value="Toggle Open/Closed Curve" id="open-or-closed">Toggle Open/Closed Curve</button>
+            <button type="submit" id="open-or-closed">Toggle Open/Closed Curve</button>
+            <button type="submit" id="key-points">Toggle Key Point Visibility</button>
         </td>
         <td width=50></td>
         <td valign=top>
@@ -15,7 +16,7 @@
                 <li>Click on a key point to delete it.
                 <li><b>Toggle between open and closed curve.</b>
                 <li>Toggle curve appearance: stroke or fill or both in different colors.
-                <li>Toggle key points between visible and invisible.
+                <li><b>Toggle key points between visible and invisible.</b>
                 <li>Support multiple curves.
                 <li>Use multiple bsplines to create your own font.
                 <li>Build a font designer.
@@ -57,9 +58,15 @@
 
     // Allow for toggling between an open / closed curve.
     let shouldBeOpen = false;
-    const button = document.querySelector('#open-or-closed');
-    button.addEventListener("click", function(){
+    const openButton = document.querySelector('#open-or-closed');
+    openButton.addEventListener('click', function() {
         shouldBeOpen = (shouldBeOpen !== true);
+    });
+
+    let showKeyPoints = true;
+    const keyPointsButton = document.querySelector('#key-points');
+    keyPointsButton.addEventListener('click', function() {
+        showKeyPoints = (showKeyPoints !== true);
     });
 
     canvas1.update = function (g) {
@@ -142,25 +149,27 @@
         g.fillStyle = 'rgb(100,255,100)';
         this.drawCurves(m, [curve], !shouldBeOpen); // Fill if the curve is toggled closed.
 
-        // Draw the key points as small disks.
-        curves = [];
-        for (n = 0; n < P.length; n++) {
-            curve = [];
-            for (t = 0; t < 2 * Math.PI; t += 1 / 10) {
-                curve.push([P[n][0] + .015 * Math.cos(t), P[n][1] + .015 * Math.sin(t), 0]);
+        if(showKeyPoints) {
+            // Draw the key points as small disks.
+            curves = [];
+            for (n = 0; n < P.length; n++) {
+                curve = [];
+                for (t = 0; t < 2 * Math.PI; t += 1 / 10) {
+                    curve.push([P[n][0] + .015 * Math.cos(t), P[n][1] + .015 * Math.sin(t), 0]);
+                }
+                curves.push(curve);
             }
-            curves.push(curve);
-        }
-        g.fillStyle = 'blue';
-        this.drawCurves(m, curves, true);
+            g.fillStyle = 'blue';
+            this.drawCurves(m, curves, true);
 
-        // Draw lines between successive key points.
-        curves = [];
-        const limit = (shouldBeOpen === true) ? P.length - 1 : P.length;
-        for (n = 0; n < limit; n++)
-            curves.push([P[n], P[(n + 1) % P.length]]);
-        g.strokeStyle = 'blue';
-        this.drawCurves(m, curves);
+            // Draw lines between successive key points.
+            curves = [];
+            const limit = (shouldBeOpen === true) ? P.length - 1 : P.length;
+            for (n = 0; n < limit; n++)
+                curves.push([P[n], P[(n + 1) % P.length]]);
+            g.strokeStyle = 'blue';
+            this.drawCurves(m, curves);
+        }
 
         // Draw the cursor as red crosshairs.
         curves = [];

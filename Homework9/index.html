@@ -12,7 +12,7 @@
             <h1>Example of Bspline curve</h1>
             <p>Some ways this could be extended: </p>
             <ul>
-                <li>Click midpoint between two key points to insert a new key point.
+                <li><b>Click midpoint between two key points to insert a new key point.</b>
                 <li>Click on a key point to delete it.
                 <li><b>Toggle between open and closed curve.</b>
                 <li>Toggle curve appearance: stroke or fill or both in different colors.
@@ -89,6 +89,8 @@
         M.save(m);
         let curves, curve, n, t;
 
+        const limit = (shouldBeOpen === true) ? P.length - 1 : P.length;
+
         // Compute the cursor.
         // Note: This will not yet work in the general case, because
         //       after converting from pixels, we need to undo perspective
@@ -97,9 +99,9 @@
         const cx = (this.cursor.x - this.width / 2) / (this.width / 2);
         const cy = (this.cursor.y - this.height / 2) / -(this.width / 2);
 
-        // When mouse is button is down, select a key point if cursor gets near it.
         if (this.cursor.z) {
             if (this.n === undefined) {
+                // When the mouse button is down, select a key point if cursor gets near it.
                 for (n = 0; n < P.length; n++) {
                     let dx = P[n][0] - cx,
                         dy = P[n][1] - cy;
@@ -109,14 +111,44 @@
                     }
                 }
             }
+            if (this.point === undefined) {
+                // If the cursor selects a midpoint between two points then add a new point.
+                for (n = 0; n < limit; n++) {
+                    let midPointX = (P[n][0] + P[(n + 1) % P.length][0]) / 2;
+                    let midPointY = (P[n][1] + P[(n + 1) % P.length][1]) / 2;
+                    let dx = midPointX - cx;
+                    let dy = midPointY - cy;
+
+                    // ... As long as it's not near a point that already exists.
+                    if (dx * dx + dy * dy < 0.05 * 0.05) {
+                        this.point = [cx, cy, 0];
+                        for (let j = 0; j < P.length; j++) {
+                            let d2x = P[j][0] - cx,
+                                d2y = P[j][1] - cy;
+                            if (d2x * d2x + d2y * d2y < 0.05 * 0.05 /*|| this.n !== undefined*/) {
+                                delete this.point;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
         } else {
             delete this.n;
+            delete this.point;
         }
 
         // If a key point is selected, move it to the cursor location.
         if (this.n !== undefined) {
             P[this.n][0] = cx;
             P[this.n][1] = cy;
+            delete this.point;
+        }
+
+        if (this.point !== undefined) {
+            P.splice(n+1, 0, this.point);
+            delete this.point;
         }
 
         curve = [];
@@ -164,9 +196,9 @@
 
             // Draw lines between successive key points.
             curves = [];
-            const limit = (shouldBeOpen === true) ? P.length - 1 : P.length;
-            for (n = 0; n < limit; n++)
+            for (n = 0; n < limit; n++) {
                 curves.push([P[n], P[(n + 1) % P.length]]);
+            }
             g.strokeStyle = 'blue';
             this.drawCurves(m, curves);
         }

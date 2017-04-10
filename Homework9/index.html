@@ -125,7 +125,7 @@
                         for (let j = 0; j < P.length; j++) {
                             let d2x = P[j][0] - cx,
                                 d2y = P[j][1] - cy;
-                            if (d2x * d2x + d2y * d2y < 0.05 * 0.05 /*|| this.n !== undefined*/) {
+                            if (d2x * d2x + d2y * d2y < 0.05 * 0.05 || this.n !== undefined) {
                                 delete this.point;
                                 break;
                             }
@@ -143,7 +143,6 @@
         if (this.n !== undefined) {
             P[this.n][0] = cx;
             P[this.n][1] = cy;
-            delete this.point;
         }
 
         if (this.point !== undefined) {

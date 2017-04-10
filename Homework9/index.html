@@ -13,7 +13,7 @@
             <p>Some ways this could be extended: </p>
             <ul>
                 <li><b>Click midpoint between two key points to insert a new key point.</b>
-                <li>Click on a key point to delete it.
+                <li><b>Click on a key point to delete it.</b>
                 <li><b>Toggle between open and closed curve.</b>
                 <li>Toggle curve appearance: stroke or fill or both in different colors.
                 <li><b>Toggle key points between visible and invisible.</b>
@@ -48,6 +48,14 @@
     }
 
     // Initial values for the key points.  The user can change them interactively.
+    const MasterP = [
+        [-.6, -.5, 0],
+        [-.2, .5, 0],
+        [.2, -.4, 0],
+        [.6, -.2, 0],
+        [.8, -.5, 0],
+    ];
+
     const P = [
         [-.6, -.5, 0],
         [-.2, .5, 0],
@@ -70,10 +78,11 @@
         showKeyPoints = (showKeyPoints !== true);
     });
 
-    function findPointNearCoordinates(x, y, proximity = 0.05) {
-        for (let n = 0; n < P.length; n++) {
-            let dx = P[n][0] - x,
-                dy = P[n][1] - y;
+    // Find a point near near the given coordinates. You can optionally vary the proximity and array being searched.
+    function findPointNearCoordinates(x, y, proximity = 0.05, pointArray = P) {
+        for (let n = 0; n < pointArray.length; n++) {
+            let dx = pointArray[n][0] - x,
+                dy = pointArray[n][1] - y;
             if (dx * dx + dy * dy < proximity * proximity) {
                 return n;
             }
@@ -111,16 +120,17 @@
         const cx = (this.cursor.x - this.width / 2) / (this.width / 2);
         const cy = (this.cursor.y - this.height / 2) / -(this.width / 2);
 
+        // Handle functionality when the mouse button is down.
         if (this.cursor.z) {
             if (this.n === undefined) {
-                // When the mouse button is down, select a key point if cursor gets near it.
+                // Select a key point if cursor gets near it.
                 const keyPointIndex = findPointNearCoordinates(cx, cy);
                 if (keyPointIndex !== -1) {
                     this.n = keyPointIndex;
                 }
             }
             if (this.point === undefined) {
-                // If the cursor selects a midpoint between two points then add a new point.
+                // If the cursor selects a midpoint between two points, then add a new point.
                 for (n = 0; n < limit; n++) {
                     let midPointX = (P[n][0] + P[(n + 1) % P.length][0]) / 2;
                     let midPointY = (P[n][1] + P[(n + 1) % P.length][1]) / 2;
@@ -128,7 +138,7 @@
                     let dy = midPointY - cy;
 
                     // ... As long as it's not near a point that already exists.
-                    if (dx * dx + dy * dy < 0.05 * 0.05) {
+                    if (dx * dx + dy * dy < 0.15 * 0.15) {
                         if (!(findPointNearCoordinates(cx, cy) !== -1 || this.n !== undefined)) {
                             this.point = [cx, cy, 0];
                             this.pointIndex = n + 1;
@@ -138,8 +148,30 @@
                 }
             }
         } else {
+            // Update the master point list when the
+            if (this.n !== undefined) {
+                const pointIndexToDelete = findPointNearCoordinates(cx, cy, 0.02, MasterP);
+                if(pointIndexToDelete !== -1) {
+                    // Delete the point from our master and standard arrays.
+                    MasterP.splice(this.n, 1);
+                    P.splice(this.n, 1);
+                } else if(MasterP.length !== P.length) {
+                    // We need to find and add the new point to our master array.
+                    for(let i = 0; i < P.length; i++) {
+                        if(!(MasterP.includes(P[i]))) {
+                            MasterP.splice(i, 0, P[i]);
+                            break;
+                        }
+                    }
+                } else {
+                    // We can just update the already existing point in the Master array.
+                    MasterP[this.n][0] = cx;
+                    MasterP[this.n][1] = cy;
+                }
+            }
             delete this.n;
             delete this.point;
+            delete this.pointIndex;
         }
 
         // If a key point is selected, move it to the cursor location.
@@ -148,7 +180,7 @@
             P[this.n][1] = cy;
         }
 
-        // If a midpoint is selected, insert it into our point array.
+        // If a midpoint is selected, insert it into our point array. Clean up afterwards.
         if (this.point !== undefined) {
             P.splice(this.pointIndex, 0, this.point);
             delete this.point;

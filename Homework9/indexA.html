@@ -70,7 +70,7 @@
         this.drawCurves(m, curves);
 
         if (this.cursor.z) {
-            if (this.n === undefined)
+            if (this.n === undefined) {
                 for (n = 0; n < P.length; n++) {
                     const dx = P[n][0] - cx;
                     const dy = P[n][1] - cy;
@@ -79,9 +79,11 @@
                         break;
                     }
                 }
+            }
         }
-        else
+        else {
             delete this.n;
+        }
 
         if (this.n !== undefined) {
             P[this.n][0] = cx;
@@ -91,14 +93,15 @@
         g.strokeStyle = 'blue';
         for (n = 0; n < P.length; n++) {
             curve = [];
-            for (t = 0; t < 2 * Math.PI; t += .01)
-                curve.push([P[n][0] + .01 * Math.cos(t),
-                    P[n][1] + .01 * Math.sin(t), 0]);
+            for (t = 0; t < 2 * Math.PI; t += .01) {
+                curve.push([P[n][0] + .01 * Math.cos(t), P[n][1] + .01 * Math.sin(t), 0]);
+            }
             curves.push(curve);
         }
 
-        for (n = 0; n < P.length - 1; n++)
+        for (n = 0; n < P.length - 1; n++) {
             curves.push([P[n], P[n + 1]]);
+        }
 
         this.drawCurves(m, curves);
         curves = [];
@@ -110,8 +113,9 @@
             const Z = M.transform(Bspline, [P[n - 1][2], P[n][2], P[n + 1][2], P[n + 2][2]]);
 
             curve = [];
-            for (t = 0; t < 1.0001; t += 1 / 20)
+            for (t = 0; t < 1.0001; t += 1 / 20) {
                 curve.push([cubic(X, t), cubic(Y, t), cubic(Z, t)]);
+            }
             curves.push(curve);
         }
 

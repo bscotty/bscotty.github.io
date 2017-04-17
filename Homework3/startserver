@@ -1,2 +1,0 @@
-killall python
-python -m SimpleHTTPServer &

@@ -60,7 +60,7 @@ void main() {
         canvas1.setShaders(vs, this.value);
     });
 
-    let obj1, obj2;
+    let obj1;
 
     gl_start(canvas1, vs, fs,
         function (time) {
@@ -72,13 +72,6 @@ void main() {
             M.save(m);
             obj1.setMatrix(m);
             M.restore(m);
-
-            M.save(m);
-            M.identity(m);
-            M.scale(m, 0.4);
-            M.rotateX(m, time);
-            obj2.setMatrix(m);
-            M.restore(m);
         }
     );
     const scene = new Scene();
@@ -89,32 +82,36 @@ void main() {
     obj1 = new SceneObject();
     const obj1Vertices = [];
     for (let i = 0; i < vertices.length; i++) {
-        for (let j = 0; j < vertices[i].length; j++) {
-            obj1Vertices.push(vertices[i][j][0]);
-            obj1Vertices.push(vertices[i][j][1]);
-            obj1Vertices.push(vertices[i][j][2]);
-            //obj1Vertices.push(0);
-            //obj1Vertices.push(0);
-            //obj1Vertices.push(1);
-        }
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][0][j]);
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][1][j]);
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][2][j]);
+
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][0][j]);
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][1][j]);
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][2][j]);
+
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][2][j]);
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][3][j]);
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][4][j]);
+
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][2][j]);
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][3][j]);
+        for (let j = 0; j < 3; j++)
+            obj1Vertices.push(vertices[i][4][j]);
     }
     obj1.setVertices(obj1Vertices);
     scene.addObject(obj1);
-
-    obj2 = new SceneObject();
-    const obj2Vertices = [];
-    for (let i = 0; i < vertices.length; i++) {
-        for (let j = 0; j < vertices[i].length; j++) {
-            obj2Vertices.push(vertices[i][j][0]);
-            obj2Vertices.push(vertices[i][j][1]);
-            obj2Vertices.push(vertices[i][j][2]);
-            obj2Vertices.push(0);
-            obj2Vertices.push(0);
-            obj2Vertices.push(1);
-        }
-    }
-    obj2.setVertices(obj2Vertices);
-    scene.addObject(obj2);
 
     canvas1.scene = scene;
 

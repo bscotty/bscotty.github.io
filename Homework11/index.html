@@ -1,10 +1,9 @@
 <script src=M.js></script>
 <script src=lib2k.js></script>
-<script src="S.js"></script>
 <script src=SHAPE.js></script>
 
 <body bgcolor=black text=white style="text-align: center">
-<canvas id='canvas1' width=600 height=600></canvas>
+<canvas id='canvas1' width=600 height=600 style="border: white solid 2px"></canvas>
 </body>
 
 <script id="vs_script" type="x-shader/x-vertex">
@@ -27,12 +26,14 @@
 <script id="fs_script" type="x-shader/x-fragment">
 
 varying vec3 vPos, vNor;
+varying vec2 vUV;
+uniform sampler2D uSampler;
 void main() {
    vec3 normal = normalize(vNor);
    vec3 c = normal * .5 + .5;
 
    /* Begin Phong Shading. */
-   vec3 L = normalize(vec3(.8,.8,.8));     // Light
+   vec3 L = normalize(vec3(.8,.8,.2));     // Light
    vec3 Lcol = vec3(.8, .5, .8);        // Light Color
    vec3 R = 2. * normal * dot(normal, L) - L;   // R
 
@@ -45,6 +46,8 @@ void main() {
        (d * max(0., dot(normal, L)) +
         s * pow(max(0., dot(E, R)), 2.5));
    /* End Phong Shading. */
+   vec4 texture = texture2D(uSampler, vUV);
+   c += 0.2 * texture.rgb;
    gl_FragColor = vec4(sqrt(c), 1.);
 }
 </script>
@@ -87,10 +90,10 @@ void main() {
         const fs2 = document.querySelector('#fs_script_2').innerHTML;
         const scene = new Scene();
 
-        const vertices = S.unitIcosahedron();
+        const vertices = SHAPE.unitIcosahedron();
 
         let obj1 = new SceneObject();
-        const material1 = new Material(vs, fs2);
+        const material1 = new Material(vs, fs);
         material1.setTexture('../public/images/polkadots.jpg');
         obj1.setMaterial(material1);
         const obj1Vertices = [];

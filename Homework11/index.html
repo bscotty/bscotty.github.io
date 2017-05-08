@@ -103,9 +103,9 @@ void main() {
             /*obj1Vertices.push(...triangle[0], ...normal, 0, 0,
                 ...triangle[1], ...normal, 0, 0,
                 ...triangle[2], ...normal, 0, 0);*/
-            obj1Vertices.push(...triangle[0], ...normal, 0, 1,
+            obj1Vertices.push(...triangle[0], ...normal, 1, -1,
                 ...triangle[1], ...normal, 1, 1,
-                ...triangle[2], ...normal, 1, 0);
+                ...triangle[2], ...normal, -1, 1);
         }
         obj1.setVertices(obj1Vertices);
         scene.addObject(obj1);

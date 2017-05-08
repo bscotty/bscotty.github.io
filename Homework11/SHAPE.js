@@ -165,7 +165,7 @@ const SHAPE = (function () {
         ];
     };
 
-    my.unitOctahedron = function() {
+    my.unitOctahedron = function () {
         const octaV = [
             [ 1, 0, 0],
             [-1, 0, 0],
@@ -185,6 +185,31 @@ const SHAPE = (function () {
             [octaV[1], octaV[2], octaV[5]],
             [octaV[1], octaV[3], octaV[4]],
             [octaV[1], octaV[3], octaV[5]],
+        ];
+    };
+
+    my.unitCube = function () {
+        const cubeV = [
+            [ 1, 1, 1],
+            [ 1, 1,-1],
+            [ 1,-1, 1],
+            [ 1,-1,-1],
+
+            [-1, 1, 1],
+            [-1, 1,-1],
+            [-1,-1, 1],
+            [-1,-1,-1],
+        ];
+
+        return [
+            [cubeV[0], cubeV[1], cubeV[3], cubeV[2]],
+            [cubeV[0], cubeV[1], cubeV[5], cubeV[4]],
+            [cubeV[0], cubeV[2], cubeV[6], cubeV[4]],
+
+            [cubeV[1], cubeV[3], cubeV[7], cubeV[5]],
+
+            [cubeV[2], cubeV[3], cubeV[7], cubeV[6]],
+            [cubeV[4], cubeV[5], cubeV[7], cubeV[6]]
         ];
     };
 

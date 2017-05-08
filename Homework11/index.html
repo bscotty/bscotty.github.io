@@ -90,35 +90,30 @@ void main() {
         return normal;
     }
 
-    function addToScene(obj, material, vertices, scene, type = 'triangle') {
-        switch (type) {
-            default:
-            case 'triangle':
-                const vertices1 = [];
-                for (let i = 0; i < vertices.length; i++) {
-                    const triangle = vertices[i];
-                    const normal = calculateNormal(triangle[0], triangle[1], triangle[2]);
-                    vertices1.push(...triangle[0], ...normal, 1, -1);
-                    vertices1.push(...triangle[1], ...normal, 1, 1,);
-                    vertices1.push(...triangle[2], ...normal, -1, 1);
+    function addToScene(obj, material, vertices, scene, triangular = true) {
+        const v = [];
+        if (triangular === true) {
+            for (let i = 0; i < vertices.length; i++) {
+                const triangle = vertices[i];
+                const normal = calculateNormal(triangle[0], triangle[1], triangle[2]);
+                v.push(...triangle[0], ...normal, 1, -1);
+                v.push(...triangle[1], ...normal, 1, 1,);
+                v.push(...triangle[2], ...normal, -1, 1);
+            }
+            obj.setVertices(v);
+        } else {
+            for (let i = 0; i < vertices.length; i++) {
+                const pentagon = vertices[i];
+                for (let j = 0; j < (pentagon.length - 2); j++) {
+                    const normal = calculateNormal(pentagon[0], pentagon[j + 1], pentagon[j + 2]);
+                    v.push(...pentagon[0], ...normal, 1, -1);
+                    v.push(...pentagon[j + 1], ...normal, 1, 1);
+                    v.push(...pentagon[j + 2], ...normal, -1, 1);
                 }
-                obj.setVertices(vertices1);
-                break;
-            case 'pentagon':
-                const vertices2 = [];
-                for (let i = 0; i < vertices.length; i++) {
-                    const pentagon = vertices[i];
-                    for (let j = 0; j < (pentagon.length - 2); j++) {
-                        const normal = calculateNormal(pentagon[0], pentagon[j + 1], pentagon[j + 2]);
-                        vertices2.push(...pentagon[0], ...normal, 1, -1);
-                        vertices2.push(...pentagon[j + 1], ...normal, 1, 1);
-                        vertices2.push(...pentagon[j + 2], ...normal, -1, 1);
-                    }
-                }
-                obj.setVertices(vertices2);
-                break;
+            }
         }
         obj.setMaterial(material);
+        obj.setVertices(v);
         scene.addObject(obj);
     }
 
@@ -126,6 +121,7 @@ void main() {
         const mIcosahedron = M.identityMatrix();
         const mDodecahedron = M.identityMatrix();
         const mOctahedron = M.identityMatrix();
+        const mCube = M.identityMatrix();
 
         const canvas1 = document.querySelector('#canvas1');
         const vs = document.querySelector('#vs_script').innerHTML;
@@ -141,12 +137,17 @@ void main() {
         let obj2 = new SceneObject();
         const material2 = new Material(vs, fs);
         vertices = SHAPE.unitDodecahedron();
-        addToScene(obj2, material2, vertices, scene, 'pentagon');
+        addToScene(obj2, material2, vertices, scene, false);
 
         let obj3 = new SceneObject();
         const material3 = new Material(vs, fs);
         vertices = SHAPE.unitOctahedron();
         addToScene(obj3, material3, vertices, scene);
+
+        let obj4 = new SceneObject();
+        const material4 = new Material(vs, fs);
+        vertices = SHAPE.unitCube();
+        addToScene(obj4, material4, vertices, scene, false);
 
         canvas1.scene = scene;
 
@@ -181,6 +182,15 @@ void main() {
             M.scale(mOctahedron, 0.4);
             obj3.setMatrix(mOctahedron);
             M.restore(mOctahedron);
+
+            M.save(mCube);
+            M.translate(mCube, [0, 0, .3]);
+            M.rotateY(mCube, time);
+            M.rotateZ(mCube, time);
+
+            M.scale(mCube, .2);
+            obj4.setMatrix(mCube);
+            M.restore(mCube);
         });
     });
 </script>

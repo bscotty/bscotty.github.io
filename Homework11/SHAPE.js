@@ -162,11 +162,31 @@ const SHAPE = (function () {
             /* Face 11 */[dodecV[5], dodecV[18], dodecV[19], dodecV[7], dodecV[15]],
 
             /* Face 12 */[dodecV[6], dodecV[19], dodecV[7], dodecV[11], dodecV[10]]
-
         ];
-
     };
 
+    my.unitOctahedron = function() {
+        const octaV = [
+            [ 1, 0, 0],
+            [-1, 0, 0],
+            [ 0, 1, 0],
+            [ 0,-1, 0],
+            [ 0, 0, 1],
+            [ 0, 0,-1],
+        ];
+
+        return [
+            [octaV[0], octaV[2], octaV[4]],
+            [octaV[0], octaV[2], octaV[5]],
+            [octaV[0], octaV[3], octaV[4]],
+            [octaV[0], octaV[3], octaV[5]],
+
+            [octaV[1], octaV[2], octaV[4]],
+            [octaV[1], octaV[2], octaV[5]],
+            [octaV[1], octaV[3], octaV[4]],
+            [octaV[1], octaV[3], octaV[5]],
+        ];
+    };
 
     return my;
 })();

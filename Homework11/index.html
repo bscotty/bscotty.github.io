@@ -26,6 +26,30 @@
 <script id="fs_script" type="x-shader/x-fragment">
 
 varying vec3 vPos, vNor;
+void main() {
+   vec3 normal = normalize(vNor);
+   vec3 c = normal * .5 + .5;
+
+   /* Begin Phong Shading. */
+   vec3 L = normalize(vec3(.8,.8,.2));     // Light
+   vec3 Lcol = vec3(.8, .5, .8);        // Light Color
+   vec3 R = 2. * normal * dot(normal, L) - L;   // R
+
+   vec3 a = vec3(.2, 0,.2); // ambient
+   vec3 d = vec3(.5,.4,.5); // diffuse
+   vec3 s = vec3(.3,.2,.3); // specular
+   vec3 E = normalize(-L);  // direction back
+
+   c = a + Lcol *
+       (d * max(0., dot(normal, L)) +
+        s * pow(max(0., dot(E, R)), 2.5));
+   /* End Phong Shading. */
+   gl_FragColor = vec4(sqrt(c), 1.);
+}
+</script>
+
+<script id="fs_script_2" type="x-shader/x-fragment">
+varying vec3 vPos, vNor;
 varying vec2 vUV;
 uniform sampler2D uSampler;
 void main() {
@@ -52,21 +76,6 @@ void main() {
 }
 </script>
 
-<script id="fs_script_2" type="x-shader/x-fragment">
-   varying vec3 vPos, vNor;
-   varying vec2 vUV;
-   uniform sampler2D uSampler;
-   void main() {
-      vec3 normal = normalize(vNor);
-      vec3 c = vec3(.1,.1,.1);
-      c += vec3(.7,.7,1.) * max(0.,dot(normal, vec3( .7, .7, .7)));
-      c += vec3(.3,.3,.5) * max(0.,dot(normal, vec3(-.7,-.7,-.7)));
-      vec4 texture = texture2D(uSampler, vUV);
-      c *= texture.rgb;
-      gl_FragColor = vec4(sqrt(c), 1.);
-   }
-</script>
-
 <script>
     function calculateNormal(point1, point2, point3) {
         const normal = [];
@@ -81,9 +90,42 @@ void main() {
         return normal;
     }
 
+    function addToScene(obj, material, vertices, scene, type = 'triangle') {
+        switch (type) {
+            default:
+            case 'triangle':
+                const vertices1 = [];
+                for (let i = 0; i < vertices.length; i++) {
+                    const triangle = vertices[i];
+                    const normal = calculateNormal(triangle[0], triangle[1], triangle[2]);
+                    vertices1.push(...triangle[0], ...normal, 1, -1);
+                    vertices1.push(...triangle[1], ...normal, 1, 1,);
+                    vertices1.push(...triangle[2], ...normal, -1, 1);
+                }
+                obj.setVertices(vertices1);
+                break;
+            case 'pentagon':
+                const vertices2 = [];
+                for (let i = 0; i < vertices.length; i++) {
+                    const pentagon = vertices[i];
+                    for (let j = 0; j < (pentagon.length - 2); j++) {
+                        const normal = calculateNormal(pentagon[0], pentagon[j + 1], pentagon[j + 2]);
+                        vertices2.push(...pentagon[0], ...normal, 1, -1);
+                        vertices2.push(...pentagon[j + 1], ...normal, 1, 1);
+                        vertices2.push(...pentagon[j + 2], ...normal, -1, 1);
+                    }
+                }
+                obj.setVertices(vertices2);
+                break;
+        }
+        obj.setMaterial(material);
+        scene.addObject(obj);
+    }
+
     window.addEventListener('load', function () {
         const mIcosahedron = M.identityMatrix();
         const mDodecahedron = M.identityMatrix();
+        const mOctahedron = M.identityMatrix();
 
         const canvas1 = document.querySelector('#canvas1');
         const vs = document.querySelector('#vs_script').innerHTML;
@@ -91,43 +133,20 @@ void main() {
         const fs2 = document.querySelector('#fs_script_2').innerHTML;
         const scene = new Scene();
 
-        let vertices = SHAPE.unitIcosahedron();
-
         let obj1 = new SceneObject();
         const material1 = new Material(vs, fs);
-        material1.setTexture('../public/images/polkadots.jpg');
-        obj1.setMaterial(material1);
-        const obj1Vertices = [];
-        for (let i = 0; i < vertices.length; i++) {
-            const triangle = vertices[i];
-            const normal = calculateNormal(triangle[0], triangle[1], triangle[2]);
-            /*obj1Vertices.push(...triangle[0], ...normal, 0, 0,
-             ...triangle[1], ...normal, 0, 0,
-             ...triangle[2], ...normal, 0, 0);*/
-            obj1Vertices.push(...triangle[0], ...normal, 1, -1,
-                ...triangle[1], ...normal, 1, 1,
-                ...triangle[2], ...normal, -1, 1);
-        }
-        obj1.setVertices(obj1Vertices);
-        scene.addObject(obj1);
+        let vertices = SHAPE.unitIcosahedron();
+        addToScene(obj1, material1, vertices, scene);
 
         let obj2 = new SceneObject();
         const material2 = new Material(vs, fs);
-        obj2.setMaterial(material2);
-        material2.setTexture('../public/images/brick.png')
         vertices = SHAPE.unitDodecahedron();
-        const obj2Vertices = [];
-        for (let i = 0; i < vertices.length; i++) {
-            const pentagon = vertices[i];
-            for (let j = 0; j < (pentagon.length - 2); j++) {
-                const normal = calculateNormal(pentagon[0], pentagon[j + 1], pentagon[j + 2]);
-                obj2Vertices.push(...pentagon[0], ...normal, 1, -1);
-                obj2Vertices.push(...pentagon[j + 1], ...normal, 1, 1);
-                obj2Vertices.push(...pentagon[j + 2], ...normal, -1, 1);
-            }
-        }
-        obj2.setVertices(obj2Vertices);
-        scene.addObject(obj2);
+        addToScene(obj2, material2, vertices, scene, 'pentagon');
+
+        let obj3 = new SceneObject();
+        const material3 = new Material(vs, fs);
+        vertices = SHAPE.unitOctahedron();
+        addToScene(obj3, material3, vertices, scene);
 
         canvas1.scene = scene;
 
@@ -146,11 +165,22 @@ void main() {
             // Animate Dodecahedron
             M.save(mDodecahedron);
             M.translate(mDodecahedron, [.5, .5, 0]);
-            M.rotateX(mDodecahedron, time);
+            M.rotateY(mDodecahedron, time);
             M.rotateZ(mDodecahedron, time);
+
             M.scale(mDodecahedron, 0.2);
             obj2.setMatrix(mDodecahedron);
             M.restore(mDodecahedron);
+
+            // Animate Octahedron
+            M.save(mOctahedron);
+            M.translate(mOctahedron, [-.5, -.5, 0]);
+            M.rotateY(mOctahedron, time);
+            M.rotateZ(mOctahedron, time);
+
+            M.scale(mOctahedron, 0.4);
+            obj3.setMatrix(mOctahedron);
+            M.restore(mOctahedron);
         });
     });
 </script>

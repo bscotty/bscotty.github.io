@@ -1,29 +1,26 @@
 <script src=M.js></script>
 <script src=lib2k.js></script>
 <script src="S.js"></script>
+<script src=SHAPE.js></script>
 
 <body bgcolor=black text=white style="text-align: center">
 <canvas id='canvas1' width=600 height=600></canvas>
 </body>
 
 <script id="vs_script" type="x-shader/x-vertex">
+
    attribute vec3 aPos, aNor;
    attribute vec2 aUV;
    varying   vec3 vPos, vNor;
+   varying   vec2 vUV;
    uniform   mat4 matrix, invMatrix;
    void main() {
       vec4 pos = matrix * vec4(aPos, 1.);
       vec4 nor = vec4(aNor, 0.) * invMatrix;
-
-// dot(nor, pos);
-// dot(nor * invMatrix, matrix * pos);
-// nor . invMatrix . matrix . pos
-// nor . (invMatrix . matrix) . pos
-// nor . pos
-
       gl_Position = pos;
       vPos = pos.xyz;
       vNor = nor.xyz;
+      vUV  = aUV;
    }
 </script>
 
@@ -52,6 +49,21 @@ void main() {
 }
 </script>
 
+<script id="fs_script_2" type="x-shader/x-fragment">
+   varying vec3 vPos, vNor;
+   varying vec2 vUV;
+   uniform sampler2D uSampler;
+   void main() {
+      vec3 normal = normalize(vNor);
+      vec3 c = vec3(.1,.1,.1);
+      c += vec3(.7,.7,1.) * max(0.,dot(normal, vec3( .7, .7, .7)));
+      c += vec3(.3,.3,.5) * max(0.,dot(normal, vec3(-.7,-.7,-.7)));
+      vec4 texture = texture2D(uSampler, vUV);
+      c *= texture.rgb;
+      gl_FragColor = vec4(sqrt(c), 1.);
+   }
+</script>
+
 <script>
     function calculateNormal(point1, point2, point3) {
         const normal = [];
@@ -72,8 +84,30 @@ void main() {
         const canvas1 = document.querySelector('#canvas1');
         const vs = document.querySelector('#vs_script').innerHTML;
         const fs = document.querySelector('#fs_script').innerHTML;
+        const fs2 = document.querySelector('#fs_script_2').innerHTML;
+        const scene = new Scene();
 
-        let obj1;
+        const vertices = S.unitIcosahedron();
+
+        let obj1 = new SceneObject();
+        const material1 = new Material(vs, fs2);
+        material1.setTexture('../public/images/polkadots.jpg');
+        obj1.setMaterial(material1);
+        const obj1Vertices = [];
+        for (let i = 0; i < vertices.length; i++) {
+            const triangle = vertices[i];
+            const normal = calculateNormal(triangle[0], triangle[1], triangle[2]);
+            /*obj1Vertices.push(...triangle[0], ...normal, 0, 0,
+                ...triangle[1], ...normal, 0, 0,
+                ...triangle[2], ...normal, 0, 0);*/
+            obj1Vertices.push(...triangle[0], ...normal, 0, 1,
+                ...triangle[1], ...normal, 1, 1,
+                ...triangle[2], ...normal, 1, 0);
+        }
+        obj1.setVertices(obj1Vertices);
+        scene.addObject(obj1);
+
+        canvas1.scene = scene;
 
         gl_start(canvas1, function (time) {
                 M.identity(m);
@@ -86,24 +120,6 @@ void main() {
                 M.restore(m);
             }
         );
-        const scene = new Scene();
-
-        const vertices = S.unitIcosahedron();
-
-        obj1 = new SceneObject();
-        obj1.setMaterial(new Material(vs, fs));
-        const obj1Vertices = [];
-        for (let i = 0; i < vertices.length; i++) {
-            const triangle = vertices[i];
-            const normal = calculateNormal(triangle[0], triangle[1], triangle[2]);
-            obj1Vertices.push(...triangle[0], ...normal, 0, 0,
-                ...triangle[1], ...normal, 0, 0,
-                ...triangle[2], ...normal, 0, 0);
-        }
-        obj1.setVertices(obj1Vertices);
-        scene.addObject(obj1);
-
-        canvas1.scene = scene;
     });
 </script>
 

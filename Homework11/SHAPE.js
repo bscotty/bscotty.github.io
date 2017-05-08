@@ -78,35 +78,93 @@ const SHAPE = (function () {
     };
 
     my.unitIcosahedron = function () {
-        const v = [];
+        const icosV = [];
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 4; j++) {
-                v.push(icos(i, j));
+                icosV.push(icos(i, j));
             }
         }
 
         return [
-            [v[0], v[2], v[8]],  // Face 1
-            [v[0], v[8], v[4]],  // Face 2
-            [v[0], v[4], v[6]],  // Face 3
-            [v[0], v[6], v[9]],  // Face 4
-            [v[0], v[9], v[2]],  // Face 5
-            [v[2], v[7], v[5]],  // Face 6
-            [v[2], v[5], v[8]],  // Face 7
-            [v[2], v[9], v[7]],  // Face 8
-            [v[8], v[5], v[10]], // Face 9
-            [v[8], v[10], v[4]], // Face 0
-            [v[10], v[5], v[3]], // Face 11
-            [v[10], v[3], v[1]], // Face 12
-            [v[10], v[1], v[4]], // Face 13
-            [v[1], v[6], v[4]],  // Face 14
-            [v[1], v[3], v[11]], // Face 15
-            [v[1], v[11], v[6]], // Face 16
-            [v[6], v[11], v[9]], // Face 17
-            [v[11], v[3], v[7]], // Face 18
-            [v[11], v[7], v[9]], // Face 19
-            [v[3], v[5], v[7]]   // Face 20
+            [icosV[0], icosV[2], icosV[8]],  // Face 1
+            [icosV[0], icosV[8], icosV[4]],  // Face 2
+            [icosV[0], icosV[4], icosV[6]],  // Face 3
+            [icosV[0], icosV[6], icosV[9]],  // Face 4
+            [icosV[0], icosV[9], icosV[2]],  // Face 5
+            [icosV[2], icosV[7], icosV[5]],  // Face 6
+            [icosV[2], icosV[5], icosV[8]],  // Face 7
+            [icosV[2], icosV[9], icosV[7]],  // Face 8
+            [icosV[8], icosV[5], icosV[10]], // Face 9
+            [icosV[8], icosV[10], icosV[4]], // Face 0
+            [icosV[10], icosV[5], icosV[3]], // Face 11
+            [icosV[10], icosV[3], icosV[1]], // Face 12
+            [icosV[10], icosV[1], icosV[4]], // Face 13
+            [icosV[1], icosV[6], icosV[4]],  // Face 14
+            [icosV[1], icosV[3], icosV[11]], // Face 15
+            [icosV[1], icosV[11], icosV[6]], // Face 16
+            [icosV[6], icosV[11], icosV[9]], // Face 17
+            [icosV[11], icosV[3], icosV[7]], // Face 18
+            [icosV[11], icosV[7], icosV[9]], // Face 19
+            [icosV[3], icosV[5], icosV[7]]   // Face 20
         ];
+    };
+
+    my.unitDodecahedron = function () {
+        const phi = (1 + Math.sqrt(5)) / 2;
+
+        const dodecV = [
+            // orange vertices (0-7)
+            [ 1, 1, 1],
+            [ 1, 1,-1],
+            [ 1,-1, 1],
+            [ 1,-1,-1],
+
+            [-1, 1, 1],
+            [-1, 1,-1],
+            [-1,-1, 1],
+            [-1,-1,-1],
+
+            // green vertices (8-11)
+            [0, phi, 1/phi],
+            [0, phi,-1/phi],
+            [0,-phi, 1/phi],
+            [0,-phi,-1/phi],
+
+            // blue vertices (12-15)
+            [ 1/phi, 0, phi],
+            [-1/phi, 0, phi],
+            [ 1/phi, 0,-phi],
+            [-1/phi, 0,-phi],
+
+            // pink vertices (16-19)
+            [ phi, 1/phi, 0],
+            [ phi,-1/phi, 0],
+            [-phi, 1/phi, 0],
+            [-phi,-1/phi, 0],
+        ];
+
+        return [
+            /* Face 1 */ [dodecV[0], dodecV[12], dodecV[2], dodecV[17], dodecV[16]],
+            /* Face 2 */ [dodecV[0], dodecV[8], dodecV[9], dodecV[1], dodecV[16]],
+            /* Face 3 */ [dodecV[0], dodecV[8], dodecV[4], dodecV[13], dodecV[12]],
+
+            /* Face 4 */ [dodecV[1], dodecV[16], dodecV[17], dodecV[3], dodecV[14]],
+            /* Face 5 */ [dodecV[1], dodecV[9], dodecV[5], dodecV[15], dodecV[14]],
+
+            /* Face 6 */ [dodecV[2], dodecV[12], dodecV[13], dodecV[6], dodecV[10]],
+            /* Face 7 */ [dodecV[2], dodecV[10], dodecV[11], dodecV[3], dodecV[17]],
+
+            /* Face 8 */ [dodecV[3], dodecV[14], dodecV[15], dodecV[7], dodecV[11]],
+
+            /* Face 9 */ [dodecV[4], dodecV[18], dodecV[5], dodecV[9], dodecV[8]],
+            /* Face 10 */[dodecV[4], dodecV[13], dodecV[6], dodecV[19], dodecV[18]],
+
+            /* Face 11 */[dodecV[5], dodecV[18], dodecV[19], dodecV[7], dodecV[15]],
+
+            /* Face 12 */[dodecV[6], dodecV[19], dodecV[7], dodecV[11], dodecV[10]]
+
+        ];
+
     };
 
 

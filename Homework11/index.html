@@ -1,0 +1,109 @@
+<script src=M.js></script>
+<script src=lib2g.js></script>
+<script src="S.js"></script>
+
+<body bgcolor=black text=white style="text-align: center">
+<canvas id='canvas1' width=600 height=600></canvas>
+</body>
+
+<script id="vs_script" type="x-shader/x-vertex">
+   attribute vec3 aPos, aNor;
+   varying   vec3 vPos, vNor;
+   uniform   mat4 matrix, invMatrix;
+   void main() {
+      vec4 pos = matrix * vec4(aPos, 1.);
+      vec4 nor = vec4(aNor, 0.) * invMatrix;
+
+// dot(nor, pos);
+// dot(nor * invMatrix, matrix * pos);
+// nor . invMatrix . matrix . pos
+// nor . (invMatrix . matrix) . pos
+// nor . pos
+
+      gl_Position = pos;
+      vPos = pos.xyz;
+      vNor = nor.xyz;
+   }
+</script>
+
+<script id="fs_script" type="x-shader/x-fragment">
+
+varying vec3 vPos, vNor;
+void main() {
+   vec3 normal = normalize(vNor);
+   vec3 c = normal * .5 + .5;
+
+   /* Begin Phong Shading. */
+   vec3 L = normalize(vec3(1,1,-1));     // Light
+   vec3 Lcol = vec3(.8, .5, .8);        // Light Color
+   vec3 R = 2. * normal * dot(normal, L) - L;   // R
+
+   vec3 a = vec3(.2, 0,.2); // ambient
+   vec3 d = vec3(.5,.4,.5); // diffuse
+   vec3 s = vec3(.3,.2,.3); // specular
+   vec3 E = normalize(-L);  // direction back
+
+   c = a + Lcol *
+       (d * max(0., dot(normal, L)) +
+        s * pow(max(0., dot(E, R)), 2.5));
+   /* End Phong Shading. */
+   gl_FragColor = vec4(sqrt(c), 1.);
+}
+</script>
+
+<script>
+    //const S = S();
+    function calculateNormal(point1, point2, point3) {
+        const normal = [];
+
+        const V = [point2[0] - point1[0], point2[1] - point1[1], point2[2] - point1[2]];
+        const W = [point3[0] - point1[0], point3[1] - point1[1], point3[2] - point1[2]];
+
+        normal[0] = (V[1] * W[2]) - (V[2] * W[1]); // Nx = (Vy * Wz) − (Vz * Wy);
+        normal[1] = (V[2] * W[0]) - (V[0] * W[2]); // Ny = (Vz * Wx) − (Vx * Wz)
+        normal[2] = (V[0] * W[1]) - (V[1] * W[0]); // Nz = (Vx * Wy) − (Vy * Wx)
+
+        return normal;
+    }
+
+    window.addEventListener('load', function () {
+        const m = M.identityMatrix();
+
+        const canvas1 = document.querySelector('#canvas1');
+        const vs = document.querySelector('#vs_script').innerHTML;
+        const fs = document.querySelector('#fs_script').innerHTML;
+
+        let obj1;
+
+        gl_start(canvas1, vs, fs,
+            function (time) {
+                M.identity(m);
+                M.rotateY(m, time);
+                M.rotateZ(m, time);
+                M.scale(m, 0.2);
+
+                M.save(m);
+                obj1.setMatrix(m);
+                M.restore(m);
+            }
+        );
+        const scene = new Scene();
+
+        const vertices = S.unitIcosahedron();
+
+        obj1 = new SceneObject();
+        const obj1Vertices = [];
+        for (let i = 0; i < vertices.length; i++) {
+            const triangle = vertices[i];
+            const normal = calculateNormal(triangle[0], triangle[1], triangle[2]);
+            obj1Vertices.push(...triangle[0], ...normal,
+                ...triangle[1], ...normal,
+                ...triangle[2], ...normal);
+        }
+        obj1.setVertices(obj1Vertices);
+        scene.addObject(obj1);
+
+        canvas1.scene = scene;
+    });
+</script>
+

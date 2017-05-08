@@ -77,6 +77,88 @@ const SHAPE = (function () {
         return V;
     };
 
+    my.unitCube = function () {
+        const cubeV = [
+            [1, 1, 1],
+            [1, 1, -1],
+            [1, -1, 1],
+            [1, -1, -1],
+
+            [-1, 1, 1],
+            [-1, 1, -1],
+            [-1, -1, 1],
+            [-1, -1, -1],
+        ];
+
+        return [
+            [cubeV[0], cubeV[1], cubeV[3], cubeV[2]],
+            [cubeV[0], cubeV[1], cubeV[5], cubeV[4]],
+            [cubeV[0], cubeV[2], cubeV[6], cubeV[4]],
+
+            [cubeV[1], cubeV[3], cubeV[7], cubeV[5]],
+
+            [cubeV[2], cubeV[3], cubeV[7], cubeV[6]],
+            [cubeV[4], cubeV[5], cubeV[7], cubeV[6]]
+        ];
+    };
+
+    my.unitDodecahedron = function () {
+        const phi = (1 + Math.sqrt(5)) / 2;
+
+        const dodecV = [
+            // orange vertices (0-7)
+            [1, 1, 1],
+            [1, 1, -1],
+            [1, -1, 1],
+            [1, -1, -1],
+
+            [-1, 1, 1],
+            [-1, 1, -1],
+            [-1, -1, 1],
+            [-1, -1, -1],
+
+            // green vertices (8-11)
+            [0, phi, 1 / phi],
+            [0, phi, -1 / phi],
+            [0, -phi, 1 / phi],
+            [0, -phi, -1 / phi],
+
+            // blue vertices (12-15)
+            [1 / phi, 0, phi],
+            [-1 / phi, 0, phi],
+            [1 / phi, 0, -phi],
+            [-1 / phi, 0, -phi],
+
+            // pink vertices (16-19)
+            [phi, 1 / phi, 0],
+            [phi, -1 / phi, 0],
+            [-phi, 1 / phi, 0],
+            [-phi, -1 / phi, 0],
+        ];
+
+        return [
+            /* Face 1 */ [dodecV[0], dodecV[12], dodecV[2], dodecV[17], dodecV[16]],
+            /* Face 2 */ [dodecV[0], dodecV[8], dodecV[9], dodecV[1], dodecV[16]],
+            /* Face 3 */ [dodecV[0], dodecV[8], dodecV[4], dodecV[13], dodecV[12]],
+
+            /* Face 4 */ [dodecV[1], dodecV[16], dodecV[17], dodecV[3], dodecV[14]],
+            /* Face 5 */ [dodecV[1], dodecV[9], dodecV[5], dodecV[15], dodecV[14]],
+
+            /* Face 6 */ [dodecV[2], dodecV[12], dodecV[13], dodecV[6], dodecV[10]],
+            /* Face 7 */ [dodecV[2], dodecV[10], dodecV[11], dodecV[3], dodecV[17]],
+
+            /* Face 8 */ [dodecV[3], dodecV[14], dodecV[15], dodecV[7], dodecV[11]],
+
+            /* Face 9 */ [dodecV[4], dodecV[18], dodecV[5], dodecV[9], dodecV[8]],
+            /* Face 10 */[dodecV[4], dodecV[13], dodecV[6], dodecV[19], dodecV[18]],
+
+            /* Face 11 */[dodecV[5], dodecV[18], dodecV[19], dodecV[7], dodecV[15]],
+
+            /* Face 12 */[dodecV[6], dodecV[19], dodecV[7], dodecV[11], dodecV[10]]
+        ];
+    };
+
+
     my.unitIcosahedron = function () {
         const icosV = [];
         for (let i = 0; i < 3; i++) {
@@ -109,70 +191,14 @@ const SHAPE = (function () {
         ];
     };
 
-    my.unitDodecahedron = function () {
-        const phi = (1 + Math.sqrt(5)) / 2;
-
-        const dodecV = [
-            // orange vertices (0-7)
-            [ 1, 1, 1],
-            [ 1, 1,-1],
-            [ 1,-1, 1],
-            [ 1,-1,-1],
-
-            [-1, 1, 1],
-            [-1, 1,-1],
-            [-1,-1, 1],
-            [-1,-1,-1],
-
-            // green vertices (8-11)
-            [0, phi, 1/phi],
-            [0, phi,-1/phi],
-            [0,-phi, 1/phi],
-            [0,-phi,-1/phi],
-
-            // blue vertices (12-15)
-            [ 1/phi, 0, phi],
-            [-1/phi, 0, phi],
-            [ 1/phi, 0,-phi],
-            [-1/phi, 0,-phi],
-
-            // pink vertices (16-19)
-            [ phi, 1/phi, 0],
-            [ phi,-1/phi, 0],
-            [-phi, 1/phi, 0],
-            [-phi,-1/phi, 0],
-        ];
-
-        return [
-            /* Face 1 */ [dodecV[0], dodecV[12], dodecV[2], dodecV[17], dodecV[16]],
-            /* Face 2 */ [dodecV[0], dodecV[8], dodecV[9], dodecV[1], dodecV[16]],
-            /* Face 3 */ [dodecV[0], dodecV[8], dodecV[4], dodecV[13], dodecV[12]],
-
-            /* Face 4 */ [dodecV[1], dodecV[16], dodecV[17], dodecV[3], dodecV[14]],
-            /* Face 5 */ [dodecV[1], dodecV[9], dodecV[5], dodecV[15], dodecV[14]],
-
-            /* Face 6 */ [dodecV[2], dodecV[12], dodecV[13], dodecV[6], dodecV[10]],
-            /* Face 7 */ [dodecV[2], dodecV[10], dodecV[11], dodecV[3], dodecV[17]],
-
-            /* Face 8 */ [dodecV[3], dodecV[14], dodecV[15], dodecV[7], dodecV[11]],
-
-            /* Face 9 */ [dodecV[4], dodecV[18], dodecV[5], dodecV[9], dodecV[8]],
-            /* Face 10 */[dodecV[4], dodecV[13], dodecV[6], dodecV[19], dodecV[18]],
-
-            /* Face 11 */[dodecV[5], dodecV[18], dodecV[19], dodecV[7], dodecV[15]],
-
-            /* Face 12 */[dodecV[6], dodecV[19], dodecV[7], dodecV[11], dodecV[10]]
-        ];
-    };
-
     my.unitOctahedron = function () {
         const octaV = [
-            [ 1, 0, 0],
+            [1, 0, 0],
             [-1, 0, 0],
-            [ 0, 1, 0],
-            [ 0,-1, 0],
-            [ 0, 0, 1],
-            [ 0, 0,-1],
+            [0, 1, 0],
+            [0, -1, 0],
+            [0, 0, 1],
+            [0, 0, -1],
         ];
 
         return [
@@ -188,28 +214,20 @@ const SHAPE = (function () {
         ];
     };
 
-    my.unitCube = function () {
-        const cubeV = [
-            [ 1, 1, 1],
-            [ 1, 1,-1],
-            [ 1,-1, 1],
-            [ 1,-1,-1],
-
-            [-1, 1, 1],
-            [-1, 1,-1],
-            [-1,-1, 1],
-            [-1,-1,-1],
+    my.unitTetrahedron = function() {
+        const s = 1 / Math.sqrt(2);
+        const tetraV = [
+            [1,0,-s],
+            [-1,0,-s],
+            [0,1,s],
+            [0,-1,s],
         ];
 
         return [
-            [cubeV[0], cubeV[1], cubeV[3], cubeV[2]],
-            [cubeV[0], cubeV[1], cubeV[5], cubeV[4]],
-            [cubeV[0], cubeV[2], cubeV[6], cubeV[4]],
-
-            [cubeV[1], cubeV[3], cubeV[7], cubeV[5]],
-
-            [cubeV[2], cubeV[3], cubeV[7], cubeV[6]],
-            [cubeV[4], cubeV[5], cubeV[7], cubeV[6]]
+            [tetraV[0], tetraV[1], tetraV[2]],
+            [tetraV[0], tetraV[1], tetraV[3]],
+            [tetraV[0], tetraV[2], tetraV[3]],
+            [tetraV[1], tetraV[2], tetraV[3]]
         ];
     };
 

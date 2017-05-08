@@ -122,6 +122,7 @@ void main() {
         const mDodecahedron = M.identityMatrix();
         const mOctahedron = M.identityMatrix();
         const mCube = M.identityMatrix();
+        const mTetrahedron = M.identityMatrix();
 
         const canvas1 = document.querySelector('#canvas1');
         const vs = document.querySelector('#vs_script').innerHTML;
@@ -149,6 +150,11 @@ void main() {
         vertices = SHAPE.unitCube();
         addToScene(obj4, material4, vertices, scene, false);
 
+        let obj5 = new SceneObject();
+        const material5 = new Material(vs, fs);
+        vertices = SHAPE.unitTetrahedron();
+        addToScene(obj5, material5, vertices, scene);
+
         canvas1.scene = scene;
 
         gl_start(canvas1, function (time) {
@@ -159,38 +165,53 @@ void main() {
             M.rotateZ(mIcosahedron, time);
             M.scale(mIcosahedron, 0.2);
 
-            M.save(mIcosahedron);
+            //M.save(mIcosahedron);
             obj1.setMatrix(mIcosahedron);
-            M.restore(mIcosahedron);
+            //M.restore(mIcosahedron);
 
             // Animate Dodecahedron
-            M.save(mDodecahedron);
+            M.identity(mDodecahedron);
             M.translate(mDodecahedron, [.5, .5, 0]);
             M.rotateY(mDodecahedron, time);
             M.rotateZ(mDodecahedron, time);
-
             M.scale(mDodecahedron, 0.2);
+
+            M.save(mDodecahedron);
             obj2.setMatrix(mDodecahedron);
             M.restore(mDodecahedron);
 
             // Animate Octahedron
-            M.save(mOctahedron);
+            M.identity(mOctahedron);
             M.translate(mOctahedron, [-.5, -.5, 0]);
             M.rotateY(mOctahedron, time);
             M.rotateZ(mOctahedron, time);
-
             M.scale(mOctahedron, 0.4);
+
+            M.save(mOctahedron);
             obj3.setMatrix(mOctahedron);
             M.restore(mOctahedron);
 
-            M.save(mCube);
+            // Animate Cube
+            M.identity(mCube);
             M.translate(mCube, [0, 0, .3]);
             M.rotateY(mCube, time);
             M.rotateZ(mCube, time);
+            M.scale(mCube, 0.2);
 
-            M.scale(mCube, .2);
+            M.save(mCube);
             obj4.setMatrix(mCube);
             M.restore(mCube);
+
+            // Animate Tetrahedron
+            M.identity(mTetrahedron);
+            M.translate(mTetrahedron, [.5, -.5, 0]);
+            M.rotateY(mTetrahedron, time);
+            M.rotateZ(mTetrahedron, time);
+            M.scale(mTetrahedron, 0.35);
+
+            M.save(mTetrahedron);
+            obj5.setMatrix(mTetrahedron);
+            M.restore(mTetrahedron);
         });
     });
 </script>

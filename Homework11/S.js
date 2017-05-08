@@ -11,6 +11,26 @@ const S = (function () {
         return q;
     }
 
+    /* 0 stays constant, phi switches sign each time, 1 switches sign every 2.
+     0: [0,  1,  phi],   4: [ 1,  phi, 0],   8: [ phi, 0,  1],
+     1: [0,  1, -phi],   5: [ 1, -phi, 0],   9: [-phi, 0,  1],
+     2: [0, -1,  phi],   6: [-1,  phi, 0],   10:[ phi, 0, -1],
+     3: [0, -1, -phi],   7: [-1, -phi, 0],   11:[-phi, 0, -1]*/
+    function icos(i, j) {
+        const phi = (1 + Math.sqrt(5)) / 2;
+        let phi1 = (j % 2 === 0) ? phi : -phi;
+        let one = (j < 2) ? 1 : -1;
+
+        switch (i) {
+            case 0:
+                return [0, one, phi1];
+            case 1:
+                return [one, phi1, 0];
+            case 2:
+                return [phi1, 0, one];
+        }
+    }
+
     my.parametricMesh = function (f, nu, nv) {
         let i, j, u, v;
         const C = [];
@@ -51,24 +71,12 @@ const S = (function () {
     };
 
     my.unitIcosahedron = function () {
-        const phi = (1 + Math.sqrt(5)) / 2;
-
-        const v = [
-            /*  Point 0  */ [0, 1, phi],
-            /*  Point 1  */ [0, 1, -phi],
-            /*  Point 2  */ [0, -1, phi],
-            /*  Point 3  */ [0, -1, -phi],
-
-            /*  Point 4  */ [1, phi, 0],
-            /*  Point 5  */ [1, -phi, 0],
-            /*  Point 6  */ [-1, phi, 0],
-            /*  Point 7  */ [-1, -phi, 0],
-
-            /*  Point 8  */ [phi, 0, 1],
-            /*  Point 9  */ [-phi, 0, 1],
-            /*  Point 10 */ [phi, 0, -1],
-            /*  Point 11 */ [-phi, 0, -1]
-        ];
+        const v = [];
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 4; j++) {
+                v.push(icos(i, j));
+            }
+        }
 
         return [
             /* Face 0 */[v[0], v[2], v[8]],

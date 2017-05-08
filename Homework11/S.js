@@ -32,7 +32,7 @@ const S = (function () {
             Math.sin(phi)];
     };
 
-    my.torus = function(u, v) {
+    my.torus = function (u, v) {
         const theta = 2 * Math.PI * u;
         const phi = 2 * Math.PI * v;
         const r = 0.3;
@@ -50,47 +50,54 @@ const S = (function () {
             2 * v - 1];
     };
 
-    my.unitIcosahedron = function() {
+    my.unitIcosahedron = function () {
         const phi = (1 + Math.sqrt(5)) / 2;
 
-        const vertices = [
-            /*  0 */[0, 1, phi],
-            /*  1 */[0, 1, -phi],
-            /*  2 */[0, -1, phi],
-            /*  3 */[0, -1, -phi],
+        const v = [
+            /*  Point 0  */ [0, 1, phi],
+            /*  Point 1  */ [0, 1, -phi],
+            /*  Point 2  */ [0, -1, phi],
+            /*  Point 3  */ [0, -1, -phi],
 
-            /*  4 */[1, phi, 0],
-            /*  5 */[1, -phi, 0],
-            /*  6 */[-1, phi, 0],
-            /*  7 */[-1, -phi, 0],
+            /*  Point 4  */ [1, phi, 0],
+            /*  Point 5  */ [1, -phi, 0],
+            /*  Point 6  */ [-1, phi, 0],
+            /*  Point 7  */ [-1, -phi, 0],
 
-            /*  8 */[phi, 0, 1],
-            /*  9 */[-phi, 0, 1],
-            /* 10 */[phi, 0, -1],
-            /* 11 */[-phi, 0, -1]
-
+            /*  Point 8  */ [phi, 0, 1],
+            /*  Point 9  */ [-phi, 0, 1],
+            /*  Point 10 */ [phi, 0, -1],
+            /*  Point 11 */ [-phi, 0, -1]
         ];
+
         return [
-            [vertices[0], vertices[2], vertices[8]],  // Face 1
-            [vertices[0], vertices[8], vertices[4]],  // Face 2
-            [vertices[0], vertices[4], vertices[6]],  // Face 3
-            [vertices[0], vertices[6], vertices[9]],  // Face 4
-            [vertices[0], vertices[9], vertices[2]],  // Face 5
-            [vertices[2], vertices[7], vertices[5]],  // Face 6
-            [vertices[2], vertices[5], vertices[8]],  // Face 7
-            [vertices[2], vertices[9], vertices[7]],  // Face 8
-            [vertices[8], vertices[5], vertices[10]], // Face 9
-            [vertices[8], vertices[10], vertices[4]], // Face 10
-            [vertices[10], vertices[5], vertices[3]], // Face 11
-            [vertices[10], vertices[3], vertices[1]], // Face 12
-            [vertices[10], vertices[1], vertices[4]], // Face 13
-            [vertices[1], vertices[6], vertices[4]],  // Face 14
-            [vertices[1], vertices[3], vertices[11]], // Face 15
-            [vertices[1], vertices[11], vertices[6]], // Face 16
-            [vertices[6], vertices[11], vertices[9]], // Face 17
-            [vertices[11], vertices[3], vertices[7]], // Face 18
-            [vertices[11], vertices[7], vertices[9]], // Face 19
-            [vertices[3], vertices[5], vertices[7]]   // Face 20
+            /* Face 0 */[v[0], v[2], v[8]],
+            /* Face 1 */[v[0], v[8], v[4]],
+            /* Face 2 */[v[0], v[4], v[6]],
+            /* Face 3 */[v[0], v[6], v[9]],
+            /* Face 4 */[v[0], v[9], v[2]],
+
+            /* Face 5 */[v[2], v[7], v[5]],
+            /* Face 6 */[v[2], v[5], v[8]],
+            /* Face 7 */[v[2], v[9], v[7]],
+
+            /* Face 8 */[v[8], v[5], v[10]],
+            /* Face 9 */[v[8], v[10], v[4]],
+
+            /* Face 10 */[v[10], v[5], v[3]],
+            /* Face 11 */[v[10], v[3], v[1]],
+            /* Face 12 */[v[10], v[1], v[4]],
+
+            /* Face 13 */[v[1], v[6], v[4]],
+            /* Face 14 */[v[1], v[3], v[11]],
+            /* Face 15 */[v[1], v[11], v[6]],
+
+            /* Face 16 */[v[6], v[11], v[9]],
+
+            /* Face 17 */[v[11], v[3], v[7]],
+            /* Face 18 */[v[11], v[7], v[9]],
+
+            /* Face 19 */[v[3], v[5], v[7]]
         ];
     };
 

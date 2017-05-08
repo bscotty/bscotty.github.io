@@ -2,7 +2,7 @@ const fragmentShaderHeader = [''               // PREDEFINED STUFF FOR FRAGMENT 
     , '   precision highp float;'
 ].join('\n');
 
-function SceneObject(vertices) {
+function SceneObject() {
     const bpe = Float32Array.BYTES_PER_ELEMENT;
 
     this.vertexSize = 6;

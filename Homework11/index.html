@@ -8,6 +8,7 @@
 
 <script id="vs_script" type="x-shader/x-vertex">
    attribute vec3 aPos, aNor;
+   attribute vec2 aUV;
    varying   vec3 vPos, vNor;
    uniform   mat4 matrix, invMatrix;
    void main() {
@@ -34,7 +35,7 @@ void main() {
    vec3 c = normal * .5 + .5;
 
    /* Begin Phong Shading. */
-   vec3 L = normalize(vec3(1,1,-1));     // Light
+   vec3 L = normalize(vec3(.8,.8,.8));     // Light
    vec3 Lcol = vec3(.8, .5, .8);        // Light Color
    vec3 R = 2. * normal * dot(normal, L) - L;   // R
 
@@ -74,8 +75,7 @@ void main() {
 
         let obj1;
 
-        gl_start(canvas1, vs, fs,
-            function (time) {
+        gl_start(canvas1, function (time) {
                 M.identity(m);
                 M.rotateY(m, time);
                 M.rotateZ(m, time);
@@ -91,13 +91,14 @@ void main() {
         const vertices = S.unitIcosahedron();
 
         obj1 = new SceneObject();
+        obj1.setMaterial(new Material(vs, fs));
         const obj1Vertices = [];
         for (let i = 0; i < vertices.length; i++) {
             const triangle = vertices[i];
             const normal = calculateNormal(triangle[0], triangle[1], triangle[2]);
-            obj1Vertices.push(...triangle[0], ...normal,
-                ...triangle[1], ...normal,
-                ...triangle[2], ...normal);
+            obj1Vertices.push(...triangle[0], ...normal, 0, 0,
+                ...triangle[1], ...normal, 0, 0,
+                ...triangle[2], ...normal, 0, 0);
         }
         obj1.setVertices(obj1Vertices);
         scene.addObject(obj1);

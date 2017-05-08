@@ -11,8 +11,10 @@ function Material(vs, fs) {
     this.bindVertexAttribute = function (name, len, type, stride, offset) {
         const gl = this.gl;
         const location = gl.getAttribLocation(this.program, name);
-        gl.enableVertexAttribArray(location);
-        gl.vertexAttribPointer(location, len, type, false, stride * bpe, offset * bpe);
+        if(location !== -1) {
+            gl.enableVertexAttribArray(location);
+            gl.vertexAttribPointer(location, len, type, false, stride * bpe, offset * bpe);
+        }
     };
 
     this.init = function (gl) {

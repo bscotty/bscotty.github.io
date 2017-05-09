@@ -214,13 +214,13 @@ const SHAPE = (function () {
         ];
     };
 
-    my.unitTetrahedron = function() {
+    my.unitTetrahedron = function () {
         const s = 1 / Math.sqrt(2);
         const tetraV = [
-            [1,0,-s],
-            [-1,0,-s],
-            [0,1,s],
-            [0,-1,s],
+            [1, 0, -s],
+            [-1, 0, -s],
+            [0, 1, s],
+            [0, -1, s],
         ];
 
         return [

@@ -80,36 +80,25 @@ void main() {
     function calculateNormal(point1, point2, point3) {
         const normal = [];
 
-        const V = [point2[0] - point1[0], point2[1] - point1[1], point2[2] - point1[2]];
-        const W = [point3[0] - point1[0], point3[1] - point1[1], point3[2] - point1[2]];
+        const U = [point2[0] - point1[0], point2[1] - point1[1], point2[2] - point1[2]];
+        const V = [point3[0] - point1[0], point3[1] - point1[1], point3[2] - point1[2]];
 
-        normal[0] = (V[1] * W[2]) - (V[2] * W[1]); // Nx = (Vy * Wz) − (Vz * Wy);
-        normal[1] = (V[2] * W[0]) - (V[0] * W[2]); // Ny = (Vz * Wx) − (Vx * Wz)
-        normal[2] = (V[0] * W[1]) - (V[1] * W[0]); // Nz = (Vx * Wy) − (Vy * Wx)
+        normal[0] = (U[1] * V[2]) - (U[2] * V[1]); // Nx = (Uy * Vz) − (Uz * Vy);
+        normal[1] = (U[2] * V[0]) - (U[0] * V[2]); // Ny = (Uz * Vx) − (Ux * Vz)
+        normal[2] = (U[0] * V[1]) - (U[1] * V[0]); // Nz = (Ux * Vy) − (Uy * Vx)
 
         return normal;
     }
 
-    function addToScene(obj, material, vertices, scene, triangular = true) {
+    function addToScene(obj, material, vertices, scene) {
         const v = [];
-        if (triangular === true) {
-            for (let i = 0; i < vertices.length; i++) {
-                const triangle = vertices[i];
-                const normal = calculateNormal(triangle[0], triangle[1], triangle[2]);
-                v.push(...triangle[0], ...normal, 1, -1);
-                v.push(...triangle[1], ...normal, 1, 1,);
-                v.push(...triangle[2], ...normal, -1, 1);
-            }
-            obj.setVertices(v);
-        } else {
-            for (let i = 0; i < vertices.length; i++) {
-                const pentagon = vertices[i];
-                for (let j = 0; j < (pentagon.length - 2); j++) {
-                    const normal = calculateNormal(pentagon[0], pentagon[j + 1], pentagon[j + 2]);
-                    v.push(...pentagon[0], ...normal, 1, -1);
-                    v.push(...pentagon[j + 1], ...normal, 1, 1);
-                    v.push(...pentagon[j + 2], ...normal, -1, 1);
-                }
+        for (let i = 0; i < vertices.length; i++) {
+            const polygon = vertices[i];
+            for (let j = 0; j < (polygon.length - 2); j++) {
+                const normal = calculateNormal(polygon[j], polygon[j + 1], polygon[j + 2]);
+                v.push(...polygon[0], ...normal, 1, -1);
+                v.push(...polygon[j + 1], ...normal, 1, 1);
+                v.push(...polygon[j + 2], ...normal, -1, 1);
             }
         }
         obj.setMaterial(material);
@@ -138,7 +127,7 @@ void main() {
         let obj2 = new SceneObject();
         const material2 = new Material(vs, fs);
         vertices = SHAPE.unitDodecahedron();
-        addToScene(obj2, material2, vertices, scene, false);
+        addToScene(obj2, material2, vertices, scene);
 
         let obj3 = new SceneObject();
         const material3 = new Material(vs, fs);
@@ -148,7 +137,7 @@ void main() {
         let obj4 = new SceneObject();
         const material4 = new Material(vs, fs);
         vertices = SHAPE.unitCube();
-        addToScene(obj4, material4, vertices, scene, false);
+        addToScene(obj4, material4, vertices, scene);
 
         let obj5 = new SceneObject();
         const material5 = new Material(vs, fs);
@@ -158,22 +147,23 @@ void main() {
         canvas1.scene = scene;
 
         gl_start(canvas1, function (time) {
+            //time = 15;
             // Animate Icosahedron
             M.identity(mIcosahedron);
             M.translate(mIcosahedron, [-.5, .5, 0]);
             M.rotateY(mIcosahedron, time);
-            M.rotateZ(mIcosahedron, time);
+            //M.rotateZ(mIcosahedron, time);
             M.scale(mIcosahedron, 0.2);
 
-            //M.save(mIcosahedron);
+            M.save(mIcosahedron);
             obj1.setMatrix(mIcosahedron);
-            //M.restore(mIcosahedron);
+            M.restore(mIcosahedron);
 
             // Animate Dodecahedron
             M.identity(mDodecahedron);
             M.translate(mDodecahedron, [.5, .5, 0]);
             M.rotateY(mDodecahedron, time);
-            M.rotateZ(mDodecahedron, time);
+            //M.rotateZ(mDodecahedron, time);
             M.scale(mDodecahedron, 0.2);
 
             M.save(mDodecahedron);
@@ -184,7 +174,7 @@ void main() {
             M.identity(mOctahedron);
             M.translate(mOctahedron, [-.5, -.5, 0]);
             M.rotateY(mOctahedron, time);
-            M.rotateZ(mOctahedron, time);
+            //M.rotateZ(mOctahedron, time);
             M.scale(mOctahedron, 0.4);
 
             M.save(mOctahedron);
@@ -195,7 +185,7 @@ void main() {
             M.identity(mCube);
             M.translate(mCube, [0, 0, .3]);
             M.rotateY(mCube, time);
-            M.rotateZ(mCube, time);
+            //M.rotateZ(mCube, time);
             M.scale(mCube, 0.2);
 
             M.save(mCube);
@@ -206,7 +196,7 @@ void main() {
             M.identity(mTetrahedron);
             M.translate(mTetrahedron, [.5, -.5, 0]);
             M.rotateY(mTetrahedron, time);
-            M.rotateZ(mTetrahedron, time);
+            //M.rotateZ(mTetrahedron, time);
             M.scale(mTetrahedron, 0.35);
 
             M.save(mTetrahedron);

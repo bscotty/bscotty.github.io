@@ -1,113 +1,25 @@
-<script src=M.js></script>
-<script src=lib2k.js></script>
-<script src=SHAPE.js></script>
+<script src="M.js"></script>
+<script src="lib2k.js"></script>
+<script src="SHAPE.js"></script>
+<script src="shaders.js"></script>
+<script src="utilities.js"></script>
 
 <body bgcolor=black text=white style="text-align: center">
+<h1>Click on the canvas to change the light's direction.</h1>
 <canvas id='canvas1' width=600 height=600 style="border: white solid 2px"></canvas>
 </body>
 
-<script id="vs_script" type="x-shader/x-vertex">
-
-   attribute vec3 aPos, aNor;
-   attribute vec2 aUV;
-   varying   vec3 vPos, vNor;
-   varying   vec2 vUV;
-   uniform   mat4 matrix, invMatrix;
-   void main() {
-      vec4 pos = matrix * vec4(aPos, 1.);
-      vec4 nor = vec4(aNor, 0.) * invMatrix;
-      gl_Position = pos;
-      vPos = pos.xyz;
-      vNor = nor.xyz;
-      vUV  = aUV;
-   }
-</script>
-
-<script id="fs_script" type="x-shader/x-fragment">
-
-varying vec3 vPos, vNor;
-void main() {
-   vec3 normal = normalize(vNor);
-   vec3 c = normal * .5 + .5;
-
-   /* Begin Phong Shading. */
-   vec3 L = normalize(vec3(.8,.8,.2));     // Light
-   vec3 Lcol = vec3(.8, .5, .8);        // Light Color
-   vec3 R = 2. * normal * dot(normal, L) - L;   // R
-
-   vec3 a = vec3(.2, 0,.2); // ambient
-   vec3 d = vec3(.5,.4,.5); // diffuse
-   vec3 s = vec3(.3,.2,.3); // specular
-   vec3 E = normalize(-L);  // direction back
-
-   c = a + Lcol *
-       (d * max(0., dot(normal, L)) +
-        s * pow(max(0., dot(E, R)), 2.5));
-   /* End Phong Shading. */
-   gl_FragColor = vec4(sqrt(c), 1.);
-}
-</script>
-
-<script id="fs_script_2" type="x-shader/x-fragment">
-varying vec3 vPos, vNor;
-varying vec2 vUV;
-uniform sampler2D uSampler;
-void main() {
-   vec3 normal = normalize(vNor);
-   vec3 c = normal * .5 + .5;
-
-   /* Begin Phong Shading. */
-   vec3 L = normalize(vec3(.8,.8,.2));     // Light
-   vec3 Lcol = vec3(.8, .5, .8);        // Light Color
-   vec3 R = 2. * normal * dot(normal, L) - L;   // R
-
-   vec3 a = vec3(.2, 0,.2); // ambient
-   vec3 d = vec3(.5,.4,.5); // diffuse
-   vec3 s = vec3(.3,.2,.3); // specular
-   vec3 E = normalize(-L);  // direction back
-
-   c = a + Lcol *
-       (d * max(0., dot(normal, L)) +
-        s * pow(max(0., dot(E, R)), 2.5));
-   /* End Phong Shading. */
-   vec4 texture = texture2D(uSampler, vUV);
-   c += 0.2 * texture.rgb;
-   gl_FragColor = vec4(sqrt(c), 1.);
-}
-</script>
-
 <script>
-    function calculateNormalFromPolygon(polygon) {
-        const normal = [0,0,0];
-        for (let i = 0; i < polygon.length; i++) {
-            normal[0] += polygon[i][0];
-            normal[1] += polygon[i][1];
-            normal[2] += polygon[i][2];
-        }
-        normal[0] = normal[0] / polygon.length;
-        normal[1] = normal[1] / polygon.length;
-        normal[2] = normal[2] / polygon.length;
+    // Obtain the information we need for our shaders.
+    const vs = shaders.vs_script;
+    const fs = shaders.fs_script_malleable_no_texture;
+    //const fs2 = shaders.fs_script_texture_supported;
+    const scene = new Scene();
+    shaders.updateMaterialsOnMouseDown(scene);
 
-        return normal;
-    }
-
-    function addToScene(obj, material, vertices, scene) {
-        const v = [];
-        for (let i = 0; i < vertices.length; i++) {
-            const polygon = vertices[i];
-            for (let j = 0; j < (polygon.length - 2); j++) {
-                const normal = calculateNormalFromPolygon(polygon);
-                v.push(...polygon[0], ...normal, 1, -1);
-                v.push(...polygon[j + 1], ...normal, 1, 1);
-                v.push(...polygon[j + 2], ...normal, -1, 1);
-            }
-        }
-        obj.setMaterial(material);
-        obj.setVertices(v);
-        scene.addObject(obj);
-    }
-
+    // Initialize The Scene and its various Objects
     window.addEventListener('load', function () {
+        // Setup our matrices.
         const mIcosahedron = M.identityMatrix();
         const mDodecahedron = M.identityMatrix();
         const mOctahedron = M.identityMatrix();
@@ -115,32 +27,33 @@ void main() {
         const mTetrahedron = M.identityMatrix();
 
         const canvas1 = document.querySelector('#canvas1');
-        const vs = document.querySelector('#vs_script').innerHTML;
-        const fs = document.querySelector('#fs_script').innerHTML;
-        const fs2 = document.querySelector('#fs_script_2').innerHTML;
-        const scene = new Scene();
 
+        // Initialize Icosahedron Object
         let obj1 = new SceneObject();
         const material1 = new Material(vs, fs);
         //material1.setTexture('../public/images/brick.png');
         let vertices = SHAPE.unitIcosahedron();
         addToScene(obj1, material1, vertices, scene);
 
+        // Initialize Dodecahedron Object
         let obj2 = new SceneObject();
         const material2 = new Material(vs, fs);
         vertices = SHAPE.unitDodecahedron();
         addToScene(obj2, material2, vertices, scene);
 
+        // Initialize Octahedron Object
         let obj3 = new SceneObject();
         const material3 = new Material(vs, fs);
         vertices = SHAPE.unitOctahedron();
         addToScene(obj3, material3, vertices, scene);
 
+        // Initialize Cube Object
         let obj4 = new SceneObject();
         const material4 = new Material(vs, fs);
         vertices = SHAPE.unitCube();
         addToScene(obj4, material4, vertices, scene);
 
+        // Initialize Tetrahedron Object
         let obj5 = new SceneObject();
         const material5 = new Material(vs, fs);
         vertices = SHAPE.unitTetrahedron();
@@ -149,7 +62,6 @@ void main() {
         canvas1.scene = scene;
 
         gl_start(canvas1, function (time) {
-            //time = 15;
             // Animate Icosahedron
             M.identity(mIcosahedron);
             M.translate(mIcosahedron, [-.5, .5, 0]);

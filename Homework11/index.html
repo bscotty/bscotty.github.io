@@ -77,15 +77,16 @@ void main() {
 </script>
 
 <script>
-    function calculateNormal(point1, point2, point3) {
-        const normal = [];
-
-        const U = [point2[0] - point1[0], point2[1] - point1[1], point2[2] - point1[2]];
-        const V = [point3[0] - point1[0], point3[1] - point1[1], point3[2] - point1[2]];
-
-        normal[0] = (U[1] * V[2]) - (U[2] * V[1]); // Nx = (Uy * Vz) − (Uz * Vy);
-        normal[1] = (U[2] * V[0]) - (U[0] * V[2]); // Ny = (Uz * Vx) − (Ux * Vz)
-        normal[2] = (U[0] * V[1]) - (U[1] * V[0]); // Nz = (Ux * Vy) − (Uy * Vx)
+    function calculateNormalFromPolygon(polygon) {
+        const normal = [0,0,0];
+        for (let i = 0; i < polygon.length; i++) {
+            normal[0] += polygon[i][0];
+            normal[1] += polygon[i][1];
+            normal[2] += polygon[i][2];
+        }
+        normal[0] = normal[0] / polygon.length;
+        normal[1] = normal[1] / polygon.length;
+        normal[2] = normal[2] / polygon.length;
 
         return normal;
     }
@@ -95,7 +96,7 @@ void main() {
         for (let i = 0; i < vertices.length; i++) {
             const polygon = vertices[i];
             for (let j = 0; j < (polygon.length - 2); j++) {
-                const normal = calculateNormal(polygon[j], polygon[j + 1], polygon[j + 2]);
+                const normal = calculateNormalFromPolygon(polygon);
                 v.push(...polygon[0], ...normal, 1, -1);
                 v.push(...polygon[j + 1], ...normal, 1, 1);
                 v.push(...polygon[j + 2], ...normal, -1, 1);
@@ -121,6 +122,7 @@ void main() {
 
         let obj1 = new SceneObject();
         const material1 = new Material(vs, fs);
+        //material1.setTexture('../public/images/brick.png');
         let vertices = SHAPE.unitIcosahedron();
         addToScene(obj1, material1, vertices, scene);
 
@@ -152,7 +154,7 @@ void main() {
             M.identity(mIcosahedron);
             M.translate(mIcosahedron, [-.5, .5, 0]);
             M.rotateY(mIcosahedron, time);
-            //M.rotateZ(mIcosahedron, time);
+            M.rotateZ(mIcosahedron, time);
             M.scale(mIcosahedron, 0.2);
 
             M.save(mIcosahedron);
@@ -163,7 +165,7 @@ void main() {
             M.identity(mDodecahedron);
             M.translate(mDodecahedron, [.5, .5, 0]);
             M.rotateY(mDodecahedron, time);
-            //M.rotateZ(mDodecahedron, time);
+            M.rotateZ(mDodecahedron, time);
             M.scale(mDodecahedron, 0.2);
 
             M.save(mDodecahedron);
@@ -174,7 +176,7 @@ void main() {
             M.identity(mOctahedron);
             M.translate(mOctahedron, [-.5, -.5, 0]);
             M.rotateY(mOctahedron, time);
-            //M.rotateZ(mOctahedron, time);
+            M.rotateZ(mOctahedron, time);
             M.scale(mOctahedron, 0.4);
 
             M.save(mOctahedron);
@@ -185,7 +187,7 @@ void main() {
             M.identity(mCube);
             M.translate(mCube, [0, 0, .3]);
             M.rotateY(mCube, time);
-            //M.rotateZ(mCube, time);
+            M.rotateZ(mCube, time);
             M.scale(mCube, 0.2);
 
             M.save(mCube);
@@ -196,7 +198,7 @@ void main() {
             M.identity(mTetrahedron);
             M.translate(mTetrahedron, [.5, -.5, 0]);
             M.rotateY(mTetrahedron, time);
-            //M.rotateZ(mTetrahedron, time);
+            M.rotateZ(mTetrahedron, time);
             M.scale(mTetrahedron, 0.35);
 
             M.save(mTetrahedron);

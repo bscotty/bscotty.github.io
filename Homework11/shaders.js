@@ -94,10 +94,9 @@ void main() {\n\
 
 
     function updateMaterials(canvas, scene, event) {
-        console.log('mouse down event', event);
-
         // Update the malleable scripts
         const coordinates = getMousePos(canvas, event);
+        console.log('mouse double click event', coordinates);
         const x = coordinates.x;
         const y = coordinates.y;
         lightDir = '' + x + ', ' + y + ', ' + defaultZ;
@@ -116,7 +115,7 @@ void main() {\n\
 
     function updateCanvas(scene) {
         const canvas1 = document.querySelector('#canvas1');
-        canvas1.addEventListener('mousedown', function(event) {
+        canvas1.addEventListener('dblclick', function(event) {
             updateMaterials(this, scene, event);
         });
     }

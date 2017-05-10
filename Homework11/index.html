@@ -5,8 +5,8 @@
 <script src="utilities.js"></script>
 
 <body bgcolor=black text=white style="text-align: center">
-<h2>Double click on the canvas to change the light's direction.</h2>
-<h2>Click and drag a shape to spin it!</h2>
+<h1>Platonic Solids!</h1>
+<p>Double click on the canvas to change the light's direction. Or, click and drag a shape to spin it!</p>
 <canvas id='canvas1' width=600 height=600 style="border: white solid 2px">
     Unfortunately, your browser does not support HTML5 Canvas.</canvas>
 </body>
@@ -67,22 +67,21 @@
 
         canvas1.scene = scene;
 
-        let icosahedronRotateX = 0, icosahedronRotateY = 0, icosahedronRotateSignX = 1, icosahedronRotateSignY = 1,
-            dodecahedronRotateX = 0, dodecahedronRotateY = 0, dodecahedronRotateSignX = 1, dodecahedronRotateSignY = 1,
-            octahedronRotateX = 0, octahedronRotateY = 0, octahedronRotateSignX = 1, octahedronRotateSignY = 1,
-            cubeRotateX = 0, cubeRotateY = 0, cubeRotateSignX = 1, cubeRotateSignY = 1,
-            tetrahedronRotateX = 0, tetrahedronRotateY = 0, tetrahedronRotateSignX = 1, tetrahedronRotateSignY = 1;
+        let icosX  = 0, icosY  = 0, icosSignX  = 1, icosSignY  = 1,
+            dodecX = 0, dodecY = 0, dodecSignX = 1, dodecSignY = 1,
+            octaX  = 0, octaY  = 0, octaSignX  = 1, octaSignY  = 1,
+            cubeX  = 0, cubeY  = 0, cubeSignX  = 1, cubeSignY  = 1,
+            tetraX = 0, tetraY = 0, tetraSignX = 1, tetraSignY = 1;
 
-        let icosahedronRotateStart = Date.now(), dodecahedronRotateStart = Date.now(), octahedronRotateStart = Date.now(),
-            cubeRotateStart = Date.now(), tetrahedronRotateStart = Date.now();
-        let icosahedronRotateTime, dodecahedronRotateTime, octahedronRotateTime, cubeRotateTime, tetrahedronRotateTime;
+        let icosSt = Date.now(), dodecSt = Date.now(), octaSt = Date.now(), cubeSt = Date.now(), tetraSt = Date.now();
+        let icosTime, dodecTime, octaTime, cubeTime, tetraTime;
 
         setInterval(function() {
-            icosahedronRotateTime = (Date.now() - icosahedronRotateStart) / 1000;
-            dodecahedronRotateTime = (Date.now() - dodecahedronRotateStart) / 1000;
-            octahedronRotateTime = (Date.now() - octahedronRotateStart) / 1000;
-            cubeRotateTime = (Date.now() - cubeRotateStart) / 1000;
-            tetrahedronRotateTime = (Date.now() - tetrahedronRotateStart) / 1000;
+            icosTime  = (Date.now() - icosSt) / 1000;
+            dodecTime = (Date.now() - dodecSt) / 1000;
+            octaTime  = (Date.now() - octaSt) / 1000;
+            cubeTime  = (Date.now() - cubeSt) / 1000;
+            tetraTime = (Date.now() - tetraSt) / 1000;
         }, 30);
 
         let isDragging = true;
@@ -92,12 +91,14 @@
         canvas1.addEventListener('mousedown', function (event) {
             isDragging = true;
             startCoordinates = getMousePos(this, event);
+            currCoordinates = getMousePos(this, event);
             console.log('mousedown event');
         });
 
         canvas1.addEventListener('mouseup', function (event) {
             //console.log('mouseup event', event);
             if(!(isDragging)) return;
+            if(startCoordinates.x === currCoordinates.x && startCoordinates.y === currCoordinates.y) return;
 
             isDragging = false;
             let type = '';
@@ -105,42 +106,46 @@
             const coordDiffY = startCoordinates.y - currCoordinates.y;
 
             // Determine the object being spun.
-            if (startCoordinates.x <= -0.25 && startCoordinates.y >= 0.25) {
+            if (startCoordinates.x <= -0.25 && startCoordinates.y >= 0.25
+                && startCoordinates.x > -0.85 && startCoordinates.y < .85) {
                 type = 'icosahedron';
-                icosahedronRotateStart = Date.now();
-                icosahedronRotateX = Math.abs(coordDiffY);
-                icosahedronRotateSignX = (coordDiffY < 0) ? 1 : -1;
-                icosahedronRotateY = Math.abs(coordDiffX);
-                icosahedronRotateSignY = (coordDiffX < 0) ? -1 : 1;
-            } else if (startCoordinates.x <= -0.25 && startCoordinates.y <= -0.25) {
+                icosSt = Date.now();
+                icosX = Math.abs(coordDiffY);
+                icosSignX = (coordDiffY < 0) ? 1 : -1;
+                icosY = Math.abs(coordDiffX);
+                icosSignY = (coordDiffX < 0) ? -1 : 1;
+            } else if (startCoordinates.x <= -0.25 && startCoordinates.y <= -0.25
+                && startCoordinates.x > -0.85 && startCoordinates.y > -.85) {
                 type = 'octahedron';
-                octahedronRotateStart = Date.now();
-                octahedronRotateX = Math.abs(coordDiffY);
-                octahedronRotateSignX = (coordDiffY < 0) ? 1 : -1;
-                octahedronRotateY = Math.abs(coordDiffX);
-                octahedronRotateSignY = (coordDiffX < 0) ? -1 : 1;
-            } else if (startCoordinates.x >= 0.25 && startCoordinates.y >= 0.25) {
+                octaSt = Date.now();
+                octaX = Math.abs(coordDiffY);
+                octaSignX = (coordDiffY < 0) ? 1 : -1;
+                octaY = Math.abs(coordDiffX);
+                octaSignY = (coordDiffX < 0) ? -1 : 1;
+            } else if (startCoordinates.x >= 0.25 && startCoordinates.y >= 0.25
+                && startCoordinates.x < 0.85 && startCoordinates.y < .85) {
                 type = 'dodecahedron';
-                dodecahedronRotateStart = Date.now();
-                dodecahedronRotateX = Math.abs(coordDiffY);
-                dodecahedronRotateSignX = (coordDiffY < 0) ? 1 : -1;
-                dodecahedronRotateY = Math.abs(coordDiffX);
-                dodecahedronRotateSignY = (coordDiffX < 0) ? -1 : 1;
-            } else if (startCoordinates.x >= 0.25 && startCoordinates.y <= -0.25) {
+                dodecSt = Date.now();
+                dodecX = Math.abs(coordDiffY);
+                dodecSignX = (coordDiffY < 0) ? 1 : -1;
+                dodecY = Math.abs(coordDiffX);
+                dodecSignY = (coordDiffX < 0) ? -1 : 1;
+            } else if (startCoordinates.x >= 0.25 && startCoordinates.y <= -0.25
+                && startCoordinates.x < 0.85 && startCoordinates.y > -.85) {
                 type = 'tetrahedron';
-                tetrahedronRotateStart = Date.now();
-                tetrahedronRotateX = Math.abs(coordDiffY);
-                tetrahedronRotateSignX = (coordDiffY < 0) ? 1 : -1;
-                tetrahedronRotateY = Math.abs(coordDiffX);
-                tetrahedronRotateSignY = (coordDiffX < 0) ? -1 : 1;
+                tetraSt = Date.now();
+                tetraX = Math.abs(coordDiffY);
+                tetraSignX = (coordDiffY < 0) ? 1 : -1;
+                tetraY = Math.abs(coordDiffX);
+                tetraSignY = (coordDiffX < 0) ? -1 : 1;
             } else if (startCoordinates.x > -0.25 && startCoordinates.x < 0.25 &&
                 startCoordinates.y < 0.25 && startCoordinates.y > -0.25) {
                 type = 'cube';
-                cubeRotateStart = Date.now();
-                cubeRotateX = Math.abs(coordDiffY);
-                cubeRotateSignX = (coordDiffY < 0) ? 1 : -1;
-                cubeRotateY = Math.abs(coordDiffX);
-                cubeRotateSignY = (coordDiffX < 0) ? -1 : 1;
+                cubeSt = Date.now();
+                cubeX = Math.abs(coordDiffY);
+                cubeSignX = (coordDiffY < 0) ? 1 : -1;
+                cubeY = Math.abs(coordDiffX);
+                cubeSignY = (coordDiffX < 0) ? -1 : 1;
             } else {
                 type = 'null';
             }
@@ -157,12 +162,12 @@
             //console.log('mousemove event', event);
         });
 
-        gl_start(canvas1, function (time) {
+        gl_start(canvas1, function () {
             // Animate Icosahedron
             M.identity(mIcosahedron);
             M.translate(mIcosahedron, [-.5, .5, 0]);
-            M.rotateX(mIcosahedron, icosahedronRotateSignX * decay(20 * icosahedronRotateX, .5 * icosahedronRotateTime));
-            M.rotateY(mIcosahedron, icosahedronRotateSignY * decay(20 * icosahedronRotateY, .5 * icosahedronRotateTime));
+            M.rotateX(mIcosahedron, icosSignX * decay(20 * icosX, .5 * icosTime));
+            M.rotateY(mIcosahedron, icosSignY * decay(20 * icosY, .5 * icosTime));
             M.scale(mIcosahedron, 0.2);
 
             M.save(mIcosahedron);
@@ -172,8 +177,8 @@
             // Animate Dodecahedron
             M.identity(mDodecahedron);
             M.translate(mDodecahedron, [.5, .5, 0]);
-            M.rotateX(mDodecahedron, dodecahedronRotateSignX * decay(20 * dodecahedronRotateX, .5 * dodecahedronRotateTime));
-            M.rotateY(mDodecahedron, dodecahedronRotateSignY * decay(20 * dodecahedronRotateY, .5 * dodecahedronRotateTime));
+            M.rotateX(mDodecahedron, dodecSignX * decay(20 * dodecX, .5 * dodecTime));
+            M.rotateY(mDodecahedron, dodecSignY * decay(20 * dodecY, .5 * dodecTime));
             M.scale(mDodecahedron, 0.2);
 
             M.save(mDodecahedron);
@@ -183,8 +188,8 @@
             // Animate Octahedron
             M.identity(mOctahedron);
             M.translate(mOctahedron, [-.5, -.5, 0]);
-            M.rotateX(mOctahedron, octahedronRotateSignX * decay(20 * octahedronRotateX, .5 * octahedronRotateTime));
-            M.rotateY(mOctahedron, octahedronRotateSignY * decay(20 * octahedronRotateY, .5 * octahedronRotateTime));
+            M.rotateX(mOctahedron, octaSignX * decay(20 * octaX, .5 * octaTime));
+            M.rotateY(mOctahedron, octaSignY * decay(20 * octaY, .5 * octaTime));
             M.scale(mOctahedron, 0.4);
 
             M.save(mOctahedron);
@@ -194,8 +199,8 @@
             // Animate Cube
             M.identity(mCube);
             M.translate(mCube, [0, 0, .3]);
-            M.rotateX(mCube, cubeRotateSignX * decay(20 * cubeRotateX, .5 * cubeRotateTime));
-            M.rotateY(mCube, cubeRotateSignY * decay(20 * cubeRotateY, .5 * cubeRotateTime));
+            M.rotateX(mCube, cubeSignX * decay(20 * cubeX, .5 * cubeTime));
+            M.rotateY(mCube, cubeSignY * decay(20 * cubeY, .5 * cubeTime));
             M.scale(mCube, 0.2);
 
             M.save(mCube);
@@ -205,8 +210,8 @@
             // Animate Tetrahedron
             M.identity(mTetrahedron);
             M.translate(mTetrahedron, [.5, -.5, 0]);
-            M.rotateX(mTetrahedron, tetrahedronRotateSignX * decay(20 * tetrahedronRotateX, .5 * tetrahedronRotateTime));
-            M.rotateY(mTetrahedron, tetrahedronRotateSignY * decay(20 * tetrahedronRotateY, .5 * tetrahedronRotateTime));
+            M.rotateX(mTetrahedron, tetraSignX * decay(20 * tetraX, .5 * tetraTime));
+            M.rotateY(mTetrahedron, tetraSignY * decay(20 * tetraY, .5 * tetraTime));
             M.scale(mTetrahedron, 0.35);
 
             M.save(mTetrahedron);

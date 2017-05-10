@@ -67,9 +67,11 @@
 
         canvas1.scene = scene;
 
-        let icosahedronRotateX = 0, icosahedronRotateY = 0, dodecahedronRotateX = 0, dodecahedronRotateY = 0,
-            octahedronRotateX = 0, octahedronRotateY = 0, cubeRotateX = 0, cubeRotateY = 0, tetrahedronRotateX = 0,
-            tetrahedronRotateY = 0;
+        let icosahedronRotateX = 0, icosahedronRotateY = 0, icosahedronRotateSignX = 1, icosahedronRotateSignY = 1,
+            dodecahedronRotateX = 0, dodecahedronRotateY = 0, dodecahedronRotateSignX = 1, dodecahedronRotateSignY = 1,
+            octahedronRotateX = 0, octahedronRotateY = 0, octahedronRotateSignX = 1, octahedronRotateSignY = 1,
+            cubeRotateX = 0, cubeRotateY = 0, cubeRotateSignX = 1, cubeRotateSignY = 1,
+            tetrahedronRotateX = 0, tetrahedronRotateY = 0, tetrahedronRotateSignX = 1, tetrahedronRotateSignY = 1;
 
         let icosahedronRotateStart = Date.now(), dodecahedronRotateStart = Date.now(), octahedronRotateStart = Date.now(),
             cubeRotateStart = Date.now(), tetrahedronRotateStart = Date.now();
@@ -107,28 +109,38 @@
                 type = 'icosahedron';
                 icosahedronRotateStart = Date.now();
                 icosahedronRotateX = Math.abs(coordDiffY);
+                icosahedronRotateSignX = (coordDiffY < 0) ? 1 : -1;
                 icosahedronRotateY = Math.abs(coordDiffX);
+                icosahedronRotateSignY = (coordDiffX < 0) ? -1 : 1;
             } else if (startCoordinates.x <= -0.25 && startCoordinates.y <= -0.25) {
                 type = 'octahedron';
                 octahedronRotateStart = Date.now();
                 octahedronRotateX = Math.abs(coordDiffY);
+                octahedronRotateSignX = (coordDiffY < 0) ? 1 : -1;
                 octahedronRotateY = Math.abs(coordDiffX);
+                octahedronRotateSignY = (coordDiffX < 0) ? -1 : 1;
             } else if (startCoordinates.x >= 0.25 && startCoordinates.y >= 0.25) {
                 type = 'dodecahedron';
                 dodecahedronRotateStart = Date.now();
                 dodecahedronRotateX = Math.abs(coordDiffY);
+                dodecahedronRotateSignX = (coordDiffY < 0) ? 1 : -1;
                 dodecahedronRotateY = Math.abs(coordDiffX);
+                dodecahedronRotateSignY = (coordDiffX < 0) ? -1 : 1;
             } else if (startCoordinates.x >= 0.25 && startCoordinates.y <= -0.25) {
                 type = 'tetrahedron';
                 tetrahedronRotateStart = Date.now();
                 tetrahedronRotateX = Math.abs(coordDiffY);
+                tetrahedronRotateSignX = (coordDiffY < 0) ? 1 : -1;
                 tetrahedronRotateY = Math.abs(coordDiffX);
+                tetrahedronRotateSignY = (coordDiffX < 0) ? -1 : 1;
             } else if (startCoordinates.x > -0.25 && startCoordinates.x < 0.25 &&
                 startCoordinates.y < 0.25 && startCoordinates.y > -0.25) {
                 type = 'cube';
                 cubeRotateStart = Date.now();
                 cubeRotateX = Math.abs(coordDiffY);
+                cubeRotateSignX = (coordDiffY < 0) ? 1 : -1;
                 cubeRotateY = Math.abs(coordDiffX);
+                cubeRotateSignY = (coordDiffX < 0) ? -1 : 1;
             } else {
                 type = 'null';
             }
@@ -149,8 +161,8 @@
             // Animate Icosahedron
             M.identity(mIcosahedron);
             M.translate(mIcosahedron, [-.5, .5, 0]);
-            M.rotateX(mIcosahedron, decay(20 * icosahedronRotateX, .5 * icosahedronRotateTime));
-            M.rotateY(mIcosahedron, decay(20 * icosahedronRotateY, .5 * icosahedronRotateTime));
+            M.rotateX(mIcosahedron, icosahedronRotateSignX * decay(20 * icosahedronRotateX, .5 * icosahedronRotateTime));
+            M.rotateY(mIcosahedron, icosahedronRotateSignY * decay(20 * icosahedronRotateY, .5 * icosahedronRotateTime));
             M.scale(mIcosahedron, 0.2);
 
             M.save(mIcosahedron);
@@ -160,8 +172,8 @@
             // Animate Dodecahedron
             M.identity(mDodecahedron);
             M.translate(mDodecahedron, [.5, .5, 0]);
-            M.rotateX(mDodecahedron, decay(20 * dodecahedronRotateX, .5 * dodecahedronRotateTime));
-            M.rotateY(mDodecahedron, decay(20 * dodecahedronRotateY, .5 * dodecahedronRotateTime));
+            M.rotateX(mDodecahedron, dodecahedronRotateSignX * decay(20 * dodecahedronRotateX, .5 * dodecahedronRotateTime));
+            M.rotateY(mDodecahedron, dodecahedronRotateSignY * decay(20 * dodecahedronRotateY, .5 * dodecahedronRotateTime));
             M.scale(mDodecahedron, 0.2);
 
             M.save(mDodecahedron);
@@ -171,8 +183,8 @@
             // Animate Octahedron
             M.identity(mOctahedron);
             M.translate(mOctahedron, [-.5, -.5, 0]);
-            M.rotateX(mOctahedron, decay(20 * octahedronRotateX, .5 * octahedronRotateTime));
-            M.rotateY(mOctahedron, decay(20 * octahedronRotateY, .5 * octahedronRotateTime));
+            M.rotateX(mOctahedron, octahedronRotateSignX * decay(20 * octahedronRotateX, .5 * octahedronRotateTime));
+            M.rotateY(mOctahedron, octahedronRotateSignY * decay(20 * octahedronRotateY, .5 * octahedronRotateTime));
             M.scale(mOctahedron, 0.4);
 
             M.save(mOctahedron);
@@ -182,8 +194,8 @@
             // Animate Cube
             M.identity(mCube);
             M.translate(mCube, [0, 0, .3]);
-            M.rotateX(mCube, decay(20 * cubeRotateX, .5 * cubeRotateTime));
-            M.rotateY(mCube, decay(20 * cubeRotateY, .5 * cubeRotateTime));
+            M.rotateX(mCube, cubeRotateSignX * decay(20 * cubeRotateX, .5 * cubeRotateTime));
+            M.rotateY(mCube, cubeRotateSignY * decay(20 * cubeRotateY, .5 * cubeRotateTime));
             M.scale(mCube, 0.2);
 
             M.save(mCube);
@@ -193,8 +205,8 @@
             // Animate Tetrahedron
             M.identity(mTetrahedron);
             M.translate(mTetrahedron, [.5, -.5, 0]);
-            M.rotateX(mTetrahedron, decay(20 * tetrahedronRotateX, .5 * tetrahedronRotateTime));
-            M.rotateY(mTetrahedron, decay(20 * tetrahedronRotateY, .5 * tetrahedronRotateTime));
+            M.rotateX(mTetrahedron, tetrahedronRotateSignX * decay(20 * tetrahedronRotateX, .5 * tetrahedronRotateTime));
+            M.rotateY(mTetrahedron, tetrahedronRotateSignY * decay(20 * tetrahedronRotateY, .5 * tetrahedronRotateTime));
             M.scale(mTetrahedron, 0.35);
 
             M.save(mTetrahedron);
